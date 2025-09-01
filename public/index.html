@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>翻訳 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+      <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        
+        .voice-wave {
+            animation: wave 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes wave {
+            0% { transform: scaleY(1); }
+            100% { transform: scaleY(0.3); }
+        }
+        
+        /* Mobile first adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .glass-effect {
+                background: rgba(255, 255, 255, 0.2);
+            }
+            
+            select, textarea, button {
+                font-size: 16px !important; /* Prevent zoom on iOS */
+            }
+        }
+        
+        /* Improved focus states for accessibility */
+        select:focus, textarea:focus, button:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.5);
+            outline-offset: 2px;
+        }
+        
+        /* Better contrast for text */
+        .text-high-contrast {
+            color: #FFFFFF;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Improved button states */
+        .btn-transition {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn-transition:active {
+            transform: scale(0.97);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="text-center py-5 px-4">
+        <h1 class="text-2xl md:text-3xl font-bold text-white mb-1 tracking-tight">
+            翻訳へようこそ！
+        </h1>
+        <p class="text-blue-100 text-sm md:text-base opacity-90 mb-2">簡単にするための翻訳。</p>
+          <p class="text-white text-sm text-center">&copy; Yuii 2025 </p>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 pb-8 flex-1">
+        <div class="max-w-4xl mx-auto">
+            <!-- Language Selector -->
+            <div class="glass-effect rounded-xl p-4 md:p-5 mb-5 border border-white/20">
+                <div class="flex flex-col md:flex-row items-center justify-center gap-3">
+                    <!-- From Language -->
+                    <div class="w-full md:w-auto flex-1">
+                        <label class="block text-white text-xs font-medium mb-1 ml-1 opacity-80">Dari</label>
+                        <select id="fromLang" class="w-full px-4 py-3 rounded-lg bg-white/15 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur text-base">
+                            <option value="id" class="text-gray-800">🇮🇩 Indonesia</option>
+                            <option value="en" class="text-gray-800">🇺🇸 English</option>
+                            <option value="ja" class="text-gray-800">🇯🇵 日本語</option>
+                        </select>
+                    </div>
+
+                    <!-- Swap Button -->
+                    <div class="py-3 md:py-0 md:px-2 md:self-end md:mb-1">
+                        <button id="swapBtn" class="w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white btn-transition transform hover:rotate-180 transition-all duration-300">
+                            <i class="fas fa-exchange-alt text-sm md:text-base"></i>
+                        </button>
+                    </div>
+
+                    <!-- To Language -->
+                    <div class="w-full md:w-auto flex-1">
+                        <label class="block text-white text-xs font-medium mb-1 ml-1 opacity-80">Ke</label>
+                        <select id="toLang" class="w-full px-4 py-3 rounded-lg bg-white/15 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur text-base">
+                            <option value="en" class="text-gray-800">🇺🇸 English</option>
+                            <option value="id" class="text-gray-800">🇮🇩 Indonesia</option>
+                            <option value="ja" class="text-gray-800">🇯🇵 日本語</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Translation Area -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <!-- Input Section -->
+                <div class="glass-effect rounded-xl border border-white/20 overflow-hidden flex flex-col">
+                    <!-- Input Header -->
+                    <div class="bg-white/10 px-4 py-3 border-b border-white/20">
+                        <div class="flex items-center justify-between">
+                            <span class="text-white font-medium text-sm md:text-base" id="fromLangLabel">Bahasa Indonesia</span>
+                            <div class="flex gap-2">
+                                <button id="voiceBtn" class="w-8 h-8 md:w-9 md:h-9 bg-rose-500 hover:bg-rose-600 rounded-full flex items-center justify-center text-white btn-transition">
+                                    <i class="fas fa-microphone text-xs md:text-sm"></i>
+                                </button>
+                                <button id="clearBtn" class="w-8 h-8 md:w-9 md:h-9 bg-slate-500 hover:bg-slate-600 rounded-full flex items-center justify-center text-white btn-transition">
+                                    <i class="fas fa-trash text-xs md:text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div class="p-4 flex-1 flex flex-col">
+                        <textarea 
+                            id="inputText" 
+                            placeholder="Ketik atau gunakan voice untuk memasukkan teks..."
+                            class="w-full h-32 md:h-40 bg-transparent text-white placeholder-blue-100 placeholder-opacity-80 resize-none focus:outline-none text-base md:text-lg leading-relaxed flex-1"
+                            maxlength="5000"
+                        ></textarea>
+                        <div class="flex justify-between items-center mt-3 pt-2 border-t border-white/10">
+                            <span class="text-blue-100 text-xs md:text-sm opacity-80" id="charCount">0/5000</span>
+                            <button id="translateBtn" class="px-4 py-2 md:px-5 md:py-2.5 bg-gray-600 hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-300 disabled:opacity-50 text-sm md:text-base btn-transition">
+                                Translate <i class="fas fa-arrow-right mr-1.5 text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Output Section -->
+                <div class="glass-effect rounded-xl border border-white/20 overflow-hidden flex flex-col">
+                    <!-- Output Header -->
+                    <div class="bg-white/10 px-4 py-3 border-b border-white/20">
+                        <div class="flex items-center justify-between">
+                            <span class="text-white font-medium text-sm md:text-base" id="toLangLabel">English</span>
+                            <div class="flex gap-2">
+                                <button id="copyBtn" class="w-8 h-8 md:w-9 md:h-9 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white btn-transition disabled:opacity-40" disabled>
+                                    <i class="fas fa-copy text-xs md:text-sm"></i>
+                                </button>
+                                <button id="speakBtn" class="w-8 h-8 md:w-9 md:h-9 bg-violet-500 hover:bg-violet-600 rounded-full flex items-center justify-center text-white btn-transition disabled:opacity-40" disabled>
+                                    <i class="fas fa-volume-up text-xs md:text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Output Area -->
+                    <div class="p-4 flex-1">
+                        <div 
+                            id="outputText" 
+                            class="w-full h-32 md:h-40 bg-transparent text-blue-100 text-base md:text-lg leading-relaxed flex items-center justify-center text-center p-2 opacity-90"
+                        >
+                            Hasil terjemahan akan muncul di sini...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Recording Indicator -->
+    <div id="voiceIndicator" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="glass-effect rounded-xl p-6 md:p-7 text-center border border-white/20 max-w-xs w-full">
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 md:w-20 md:h-20 bg-rose-500 rounded-full flex items-center justify-center pulse-animation">
+                    <i class="fas fa-microphone text-xl text-white"></i>
+                </div>
+            </div>
+            <p class="text-white text-base font-medium mb-2">Speech Now</p>
+            <p class="text-blue-200 text-xs mb-4 opacity-90"></p>
+            <button id="stopVoiceBtn" class="px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg font-medium transition-all duration-300 text-sm md:text-base btn-transition">
+                <i class="fas fa-stop mr-1.5 text-xs"></i>Stop
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-40 p-4">
+        <div class="glass-effect rounded-xl p-6 md:p-7 text-center border border-white/20 max-w-xs w-full">
+            <div class="animate-spin w-10 h-10 md:w-12 md:h-12 border-4 border-indigo-400 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p class="text-white font-medium text-sm md:text-base">Memproses terjemahan...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-0 transform translate-x-full transition-transform duration-300 z-50 max-w-sm">
+        <div class="glass-effect rounded-lg p-3 border border-white/20 text-white">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle text-emerald-300 mr-2 text-sm"></i>
+                <span id="toastMessage" class="text-sm">Teks berhasil disalin!</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        class TranslatorApp {
+            constructor() {
+                this.initializeElements();
+                this.attachEventListeners();
+                this.setupSpeechRecognition();
+                this.updateLanguageLabels();
+                this.isSpeaking = false; // Tambahkan state untuk melacak status berbicara
+            }
+
+            initializeElements() {
+                this.elements = {
+                    fromLang: document.getElementById('fromLang'),
+                    toLang: document.getElementById('toLang'),
+                    swapBtn: document.getElementById('swapBtn'),
+                    inputText: document.getElementById('inputText'),
+                    outputText: document.getElementById('outputText'),
+                    translateBtn: document.getElementById('translateBtn'),
+                    voiceBtn: document.getElementById('voiceBtn'),
+                    clearBtn: document.getElementById('clearBtn'),
+                    copyBtn: document.getElementById('copyBtn'),
+                    speakBtn: document.getElementById('speakBtn'),
+                    charCount: document.getElementById('charCount'),
+                    fromLangLabel: document.getElementById('fromLangLabel'),
+                    toLangLabel: document.getElementById('toLangLabel'),
+                    voiceIndicator: document.getElementById('voiceIndicator'),
+                    stopVoiceBtn: document.getElementById('stopVoiceBtn'),
+                    loadingIndicator: document.getElementById('loadingIndicator'),
+                    toast: document.getElementById('toast'),
+                    toastMessage: document.getElementById('toastMessage')
+                };
+            }
+
+            attachEventListeners() {
+                this.elements.translateBtn.addEventListener('click', () => this.translateText());
+                this.elements.swapBtn.addEventListener('click', () => this.swapLanguages());
+                this.elements.voiceBtn.addEventListener('click', () => this.startVoiceRecognition());
+                this.elements.stopVoiceBtn.addEventListener('click', () => this.stopVoiceRecognition());
+                this.elements.clearBtn.addEventListener('click', () => this.clearText());
+                this.elements.copyBtn.addEventListener('click', () => this.copyResult());
+                this.elements.speakBtn.addEventListener('click', () => this.toggleSpeech());
+                
+                this.elements.inputText.addEventListener('input', () => this.updateCharCount());
+                this.elements.inputText.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        this.translateText();
+                    }
+                });
+
+                this.elements.fromLang.addEventListener('change', () => this.updateLanguageLabels());
+                this.elements.toLang.addEventListener('change', () => this.updateLanguageLabels());
+            }
+
+            setupSpeechRecognition() {
+                // Cek support untuk Speech Recognition
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                
+                if (SpeechRecognition) {
+                    this.recognition = new SpeechRecognition();
+                    
+                    // Konfigurasi recognition
+                    this.recognition.continuous = false;
+                    this.recognition.interimResults = true;
+                    this.recognition.maxAlternatives = 1;
+                    
+                    // Event handlers
+                    this.recognition.onstart = () => {
+                        console.log('Speech recognition started');
+                        this.showVoiceIndicator();
+                    };
+
+                    this.recognition.onresult = (event) => {
+                        console.log('Speech recognition result:', event);
+                        let finalTranscript = '';
+                        let interimTranscript = '';
+
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            const transcript = event.results[i][0].transcript;
+                            if (event.results[i].isFinal) {
+                                finalTranscript += transcript;
+                            } else {
+                                interimTranscript += transcript;
+                            }
+                        }
+
+                        if (finalTranscript) {
+                            this.elements.inputText.value = finalTranscript;
+                            this.updateCharCount();
+                            this.showToast('Suara berhasil dikonversi ke teks!', 'success');
+                        } else if (interimTranscript) {
+                            // Tampilkan hasil sementara
+                            this.elements.inputText.value = interimTranscript;
+                            this.updateCharCount();
+                        }
+                    };
+
+                    this.recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event.error);
+                        let errorMessage = 'Terjadi kesalahan pada voice recognition';
+                        
+                        switch(event.error) {
+                            case 'no-speech':
+                                errorMessage = 'Tidak terdeteksi suara. Coba bicara lebih jelas.';
+                                break;
+                            case 'audio-capture':
+                                errorMessage = 'Tidak dapat mengakses mikrofon. Periksa permission browser.';
+                                break;
+                            case 'not-allowed':
+                                errorMessage = 'Akses mikrofon ditolak. Berikan permission di browser.';
+                                break;
+                            case 'network':
+                                errorMessage = 'Masalah koneksi internet.';
+                                break;
+                            case 'language-not-supported':
+                                errorMessage = 'Bahasa tidak didukung untuk voice recognition.';
+                                break;
+                        }
+                        
+                        this.showToast(errorMessage, 'error');
+                        this.hideVoiceIndicator();
+                    };
+
+                    this.recognition.onend = () => {
+                        console.log('Speech recognition ended');
+                        this.hideVoiceIndicator();
+                        
+                        // Auto translate jika ada teks
+                        if (this.elements.inputText.value.trim()) {
+                            setTimeout(() => {
+                                this.translateText();
+                            }, 500);
+                        }
+                    };
+
+                    // Test permission on init
+                    this.checkMicrophonePermission();
+                } else {
+                    this.elements.voiceBtn.disabled = true;
+                    this.elements.voiceBtn.title = 'Voice recognition tidak didukung browser ini';
+                    console.warn('Speech Recognition not supported');
+                }
+            }
+
+            async checkMicrophonePermission() {
+                try {
+                    if (navigator.permissions) {
+                        const permission = await navigator.permissions.query({name: 'microphone'});
+                        console.log('Microphone permission:', permission.state);
+                        
+                        if (permission.state === 'denied') {
+                            this.elements.voiceBtn.disabled = true;
+                            this.elements.voiceBtn.title = 'Akses mikrofon ditolak. Aktifkan di pengaturan browser.';
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not check microphone permission:', error);
+                }
+            }
+
+            async translateText() {
+                const text = this.elements.inputText.value.trim();
+                if (!text) {
+                    this.showToast('Masukkan teks yang ingin diterjemahkan', 'error');
+                    return;
+                }
+
+                this.showLoading();
+                
+                try {
+                    const response = await fetch('/api/translate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: text,
+                            fromLang: this.elements.fromLang.value,
+                            toLang: this.elements.toLang.value
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Terjadi kesalahan');
+                    }
+
+                    this.elements.outputText.textContent = data.translatedText;
+                    this.elements.outputText.classList.remove('text-blue-200', 'justify-center');
+                    this.elements.outputText.classList.add('text-white');
+                    
+                    this.elements.copyBtn.disabled = false;
+                    this.elements.speakBtn.disabled = false;
+
+                } catch (error) {
+                    this.showToast(error.message || 'Terjadi kesalahan saat menerjemahkan', 'error');
+                    console.error('Translation error:', error);
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            swapLanguages() {
+                const fromValue = this.elements.fromLang.value;
+                const toValue = this.elements.toLang.value;
+                
+                this.elements.fromLang.value = toValue;
+                this.elements.toLang.value = fromValue;
+                
+                const inputValue = this.elements.inputText.value;
+                const outputValue = this.elements.outputText.textContent;
+                
+                if (outputValue && outputValue !== 'Hasil terjemahan akan muncul di sini...') {
+                    this.elements.inputText.value = outputValue;
+                    this.elements.outputText.textContent = inputValue;
+                }
+                
+                this.updateLanguageLabels();
+                this.updateCharCount();
+            }
+
+            startVoiceRecognition() {
+                if (!this.recognition) {
+                    this.showToast('Voice recognition tidak tersedia', 'error');
+                    return;
+                }
+
+                const lang = this.elements.fromLang.value;
+                this.recognition.lang = this.getRecognitionLang(lang);
+                
+                this.showVoiceIndicator();
+                this.recognition.start();
+            }
+
+            stopVoiceRecognition() {
+                if (this.recognition) {
+                    this.recognition.stop();
+                }
+                this.hideVoiceIndicator();
+            }
+
+            getRecognitionLang(langCode) {
+                const langMap = {
+                    'id': 'id-ID',
+                    'en': 'en-US',
+                    'ja': 'ja-JP'
+                };
+                return langMap[langCode] || 'en-US';
+            }
+
+            clearText() {
+                this.elements.inputText.value = '';
+                this.elements.outputText.textContent = 'Hasil terjemahan akan muncul di sini...';
+                this.elements.outputText.classList.add('text-blue-200', 'justify-center');
+                this.elements.outputText.classList.remove('text-white');
+                this.elements.copyBtn.disabled = true;
+                this.elements.speakBtn.disabled = true;
+                this.updateCharCount();
+            }
+
+            async copyResult() {
+                const text = this.elements.outputText.textContent;
+                if (text && text !== 'Hasil terjemahan akan muncul di sini...') {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        this.showToast('Teks berhasil disalin!', 'success');
+                    } catch (error) {
+                        this.showToast('Gagal menyalin teks', 'error');
+                    }
+                }
+            }
+
+            // Fungsi untuk toggle berbicara/menghentikan
+            toggleSpeech() {
+                if (this.isSpeaking) {
+                    this.stopSpeech();
+                } else {
+                    this.speakResult();
+                }
+            }
+
+            // Fungsi untuk mengonversi teks menjadi suara
+            speakResult() {
+                const text = this.elements.outputText.textContent;
+                
+                // Cek jika teks kosong atau masih placeholder
+                if (!text || text === 'Hasil terjemahan akan muncul di sini...') {
+                    this.showToast('Tidak ada teks untuk dibacakan', 'error');
+                    return;
+                }
+
+                // Cek browser support untuk speech synthesis
+                if ('speechSynthesis' in window) {
+                    // Hentikan pembacaan yang sedang berlangsung
+                    window.speechSynthesis.cancel();
+                    
+                    // Buat utterance baru
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    // Set bahasa berdasarkan pilihan bahasa tujuan
+                    const toLang = this.elements.toLang.value;
+                    utterance.lang = this.getSpeechLang(toLang);
+                    
+                    // Atur kecepatan dan pitch
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1;
+                    
+                    // Event ketika suara selesai
+                    utterance.onend = () => {
+                        this.isSpeaking = false;
+                        this.elements.speakBtn.classList.remove('animate-pulse', 'bg-purple-600');
+                        this.elements.speakBtn.classList.add('bg-purple-500');
+                        this.elements.speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    };
+                    
+                    // Event ketika terjadi error
+                    utterance.onerror = (event) => {
+                        console.error('Speech synthesis error:', event);
+                        this.showToast('Error dalam membacakan teks', 'error');
+                        this.isSpeaking = false;
+                        this.elements.speakBtn.classList.remove('animate-pulse', 'bg-purple-600');
+                        this.elements.speakBtn.classList.add('bg-purple-500');
+                        this.elements.speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    };
+                    
+                    // Mulai berbicara
+                    window.speechSynthesis.speak(utterance);
+                    this.isSpeaking = true;
+                    
+                    // Ubah tampilan tombol saat sedang berbicara
+                    this.elements.speakBtn.classList.add('animate-pulse', 'bg-purple-600');
+                    this.elements.speakBtn.classList.remove('bg-purple-500');
+                    this.elements.speakBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                    
+                } else {
+                    this.showToast('Browser tidak mendukung text-to-speech', 'error');
+                }
+            }
+
+            // Fungsi untuk mendapatkan kode bahasa yang sesuai
+            getSpeechLang(langCode) {
+                const langMap = {
+                    'id': 'id-ID',
+                    'en': 'en-US',
+                    'ja': 'ja-JP'
+                };
+                return langMap[langCode] || 'en-US';
+            }
+
+            // Fungsi untuk menghentikan pembacaan
+            stopSpeech() {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    this.isSpeaking = false;
+                    this.elements.speakBtn.classList.remove('animate-pulse', 'bg-purple-600');
+                    this.elements.speakBtn.classList.add('bg-purple-500');
+                    this.elements.speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                }
+            }
+
+            updateCharCount() {
+                const length = this.elements.inputText.value.length;
+                this.elements.charCount.textContent = `${length}/5000`;
+                
+                if (length > 4500) {
+                    this.elements.charCount.classList.add('text-red-300');
+                } else {
+                    this.elements.charCount.classList.remove('text-red-300');
+                }
+            }
+
+            updateLanguageLabels() {
+                const langNames = {
+                    'id': 'Bahasa Indonesia',
+                    'en': 'English', 
+                    'ja': '日本語'
+                };
+                
+                this.elements.fromLangLabel.textContent = langNames[this.elements.fromLang.value];
+                this.elements.toLangLabel.textContent = langNames[this.elements.toLang.value];
+            }
+
+            showVoiceIndicator() {
+                this.elements.voiceIndicator.classList.remove('hidden');
+                this.elements.voiceIndicator.classList.add('flex');
+            }
+
+            hideVoiceIndicator() {
+                this.elements.voiceIndicator.classList.add('hidden');
+                this.elements.voiceIndicator.classList.remove('flex');
+            }
+
+            showLoading() {
+                this.elements.loadingIndicator.classList.remove('hidden');
+                this.elements.loadingIndicator.classList.add('flex');
+                this.elements.translateBtn.disabled = true;
+            }
+
+            hideLoading() {
+                this.elements.loadingIndicator.classList.add('hidden');
+                this.elements.loadingIndicator.classList.remove('flex');
+                this.elements.translateBtn.disabled = false;
+            }
+
+            showToast(message, type = 'success') {
+                this.elements.toastMessage.textContent = message;
+                
+                const icon = this.elements.toast.querySelector('i');
+                icon.className = type === 'success' ? 'fas fa-check-circle text-green-400 mr-3' : 'fas fa-exclamation-circle text-red-400 mr-3';
+                
+                this.elements.toast.classList.remove('translate-x-full');
+                
+                setTimeout(() => {
+                    this.elements.toast.classList.add('translate-x-full');
+                }, 3000);
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new TranslatorApp();
+            
+            // Tambahkan style untuk animasi pulsate
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+                .animate-pulse {
+                    animation: pulse 1.5s infinite;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
