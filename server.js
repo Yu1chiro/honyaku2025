@@ -34,69 +34,49 @@ app.get('/api/languages', (req, res) => {
   res.json(supportedLanguages);
 });
 
-// Route untuk translate text
 app.post('/api/translate', async (req, res) => {
   try {
     const { text, fromLang, toLang } = req.body;
 
-    // Validasi input
-    if (!text || !fromLang || !toLang) {
-      return res.status(400).json({ 
-        error: 'Text, fromLang, dan toLang harus diisi' 
-      });
-    }
-
-    if (!supportedLanguages[fromLang] || !supportedLanguages[toLang]) {
-      return res.status(400).json({ 
-        error: 'Bahasa tidak didukung' 
-      });
-    }
+    if (!text || !fromLang || !toLang) return res.status(400).json({ error: 'Missing parameters' });
+    if (!supportedLanguages[fromLang] || !supportedLanguages[toLang]) return res.status(400).json({ error: 'Language not supported' });
 
     if (fromLang === toLang) {
       return res.json({ 
-        translatedText: text,
-        fromLanguage: supportedLanguages[fromLang],
-        toLanguage: supportedLanguages[toLang]
+        translatedText: text, 
+        fromLanguage: supportedLanguages[fromLang], 
+        toLanguage: supportedLanguages[toLang] 
       });
     }
 
-    const fromLanguageName = supportedLanguages[fromLang];
-    const toLanguageName = supportedLanguages[toLang];
+    const fromName = supportedLanguages[fromLang];
+    const toName = supportedLanguages[toLang];
     
-    // --- LOGIKA PROMPT BARU ---
-    // Daftar bahasa yang butuh cara baca (transliterasi) agar TTS jalan
-    const complexScripts = ['my', 'th', 'ja', 'zh', 'ko'];
-    const needsTransliteration = complexScripts.includes(toLang);
+    // Daftar bahasa yang WAJIB punya cara baca (Latin)
+    // Myanmar (my), Thai (th), Jepang (ja), Mandarin (zh), Korea (ko), Khmer (km), Lao (lo)
+    const complexLangs = ['my', 'th', 'ja', 'zh', 'ko', 'km', 'lo'];
+    const needsReading = complexLangs.includes(toLang);
 
     let prompt;
-    
-    if (needsTransliteration) {
-        // Prompt khusus meminta format JSON berisi terjemahan DAN cara baca
-        prompt = `Role: Penerjemah profesional.
-Tugas: Terjemahkan teks "${text}" dari ${fromLanguageName} ke ${toLanguageName}.
 
-Instruksi Output:
-Berikan respon HANYA dalam format JSON valid (tanpa markdown code block).
-Struktur JSON:
-{
-  "translatedText": "hasil terjemahan dalam aksara asli",
-  "transliteration": "cara baca dalam huruf latin/alphabet agar orang asing bisa membacanya"
-}`;
+    if (needsReading) {
+        // LOGIKA BARU: Simpel ala Google Translate
+        // Kita minta format: TERJEMAHAN ||| CARA_BACA
+        // Tidak ada JSON, tidak ada ribet.
+        prompt = `Translate this text from ${fromName} to ${toName}.
+        
+        IMPORTANT OUTPUT FORMAT:
+        Write the translation, followed by " ||| ", followed by the pronunciation in Latin alphabet.
+        Example output: สวัสดี ||| Sawasdee
+        
+        Text to translate: "${text}"`;
     } else {
-        // Prompt standar untuk bahasa latin
-        prompt = `Terjemahkan teks berikut dari ${fromLanguageName} ke ${toLanguageName}. 
-Berikan HANYA hasil terjemahan tanpa penjelasan tambahan:
-
-"${text}"`;
+        prompt = `Translate this text from ${fromName} to ${toName}. Output ONLY the translation. Text: "${text}"`;
     }
 
-    // Validasi API key
-    if (!process.env.GEMINI_APIKEY) {
-      throw new Error('GEMINI_APIKEY tidak ditemukan di file .env');
-    }
+    if (!process.env.GEMINI_APIKEY) throw new Error('GEMINI_APIKEY missing');
 
-    // Request ke Gemini API
-    const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -105,61 +85,49 @@ Berikan HANYA hasil terjemahan tanpa penjelasan tambahan:
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: 0.3,
-          topK: 1,
-          topP: 1,
-          maxOutputTokens: 2048,
-          responseMimeType: needsTransliteration ? "application/json" : "text/plain"
+          temperature: 0.3, 
+          maxOutputTokens: 1000 
         }
       })
     });
 
-    const geminiData = await geminiResponse.json();
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || 'Gemini API Error');
 
-    if (!geminiResponse.ok) {
-      console.error('Gemini API Error Details:', geminiData);
-      throw new Error(`Gemini API error: ${geminiResponse.status} - ${geminiData.error?.message || 'Unknown error'}`);
-    }
-    
-    let rawResponse = geminiData.candidates[0]?.content?.parts[0]?.text?.trim();
-    
-    if (!rawResponse) {
-      throw new Error('Tidak ada hasil terjemahan dari Gemini');
-    }
+    let rawResult = data.candidates[0]?.content?.parts[0]?.text?.trim();
+    if (!rawResult) throw new Error('No translation found');
 
-    let translatedText = rawResponse;
+    let translatedText = rawResult;
     let transliteration = '';
 
-    // --- PARSING JSON RESPON ---
-    if (needsTransliteration) {
-        try {
-            // Bersihkan markdown jika Gemini tidak sengaja menambahkannya (misal ```json ... ```)
-            const cleanJson = rawResponse.replace(/```json|```/g, '').trim();
-            const parsedData = JSON.parse(cleanJson);
-            
-            translatedText = parsedData.translatedText;
-            transliteration = parsedData.transliteration;
-        } catch (e) {
-            console.error("Gagal parsing JSON transliterasi:", e);
-            // Fallback: jika gagal parse, anggap seluruh respon adalah terjemahan
-            translatedText = rawResponse;
+    // PARSING LOGIKA BARU (Pemisah |||)
+    if (needsReading && rawResult.includes('|||')) {
+        const parts = rawResult.split('|||');
+        translatedText = parts[0].trim();
+        transliteration = parts[1].trim(); // Ambil bagian kanan sebagai cara baca
+    } else if (needsReading) {
+        // Fallback jika Gemini lupa kasih pemisah, kita coba bersihkan sedapatnya
+        // Biasanya formatnya jadi: "BurmeseText (Latin)"
+        const match = rawResult.match(/(.*?)\s*\((.*?)\)/);
+        if (match) {
+            translatedText = match[1].trim();
+            transliteration = match[2].trim();
         }
     }
 
+    // Bersihkan tanda kutip yang tidak perlu jika ada
+    translatedText = translatedText.replace(/^"|"$/g, '');
+
     res.json({
       translatedText,
-      transliteration, // Mengirim cara baca ke frontend
-      fromLanguage: fromLanguageName,
-      toLanguage: toLanguageName,
-      originalText: text
+      transliteration,
+      fromLanguage: fromName,
+      toLanguage: toName
     });
 
   } catch (error) {
-    console.error('Translation error:', error);
-    res.status(500).json({ 
-      error: 'Terjadi kesalahan saat menerjemahkan teks',
-      details: error.message 
-    });
+    console.error('Translation Error:', error);
+    res.status(500).json({ error: 'Translation failed', details: error.message });
   }
 });
 

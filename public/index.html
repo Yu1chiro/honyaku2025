@@ -506,35 +506,32 @@
                     });
 
                     const data = await response.json();
-
                     if (!response.ok) throw new Error(data.error || 'Gagal');
 
-                    // LOGIKA DISPLAY BARU: Handle Transliterasi
+                    // TAMPILAN ALA GOOGLE TRANSLATE
                     if (data.transliteration) {
-                        // Jika ada cara baca, tampilkan layout bertumpuk
                         this.elements.outputText.innerHTML = `
-                            <div class="flex flex-col gap-2">
-                                <span class="text-lg md:text-xl font-medium leading-relaxed">${data.translatedText}</span>
-                                <div class="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-[#2a2f4a] p-2.5 rounded-lg border border-purple-100 dark:border-purple-900/30">
-                                    <i class="fas fa-spell-check text-xs opacity-70"></i>
-                                    <span class="font-mono italic">${data.transliteration}</span>
+                            <div class="flex flex-col justify-start h-full gap-1">
+                                <div class="text-2xl font-medium text-gray-800 dark:text-white mb-1 leading-relaxed">
+                                    ${data.translatedText}
+                                </div>
+                                
+                                <div class="text-md text-gray-500 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-800/50 px-3 py-2 rounded-lg w-fit">
+                                    ${data.transliteration}
                                 </div>
                             </div>
                         `;
-                        // Simpan data di elemen agar bisa dibaca TTS
+                        // Simpan untuk TTS
                         this.elements.outputText.dataset.reading = data.transliteration;
                         this.elements.outputText.dataset.raw = data.translatedText;
                     } else {
-                        // Tampilan standar
+                        // Tampilan Biasa
                         this.elements.outputText.textContent = data.translatedText;
-                        // Hapus dataset lama
                         this.elements.outputText.removeAttribute('data-reading');
                         this.elements.outputText.removeAttribute('data-raw');
                     }
 
-                    this.elements.outputText.classList.remove('italic', 'text-gray-400', 'dark:text-tokyo-muted/40');
-                    this.elements.outputText.classList.add('text-gray-800', 'dark:text-tokyo-text');
-
+                    this.elements.outputText.classList.remove('italic', 'text-gray-400');
                     this.elements.copyBtn.disabled = false;
                     this.elements.speakBtn.disabled = false;
 
@@ -544,7 +541,6 @@
                     this.hideLoading();
                 }
             }
-
             // GANTI METHOD toggleSpeech LAMA DENGAN INI (FIX TTS MYANMAR/THAI)
             toggleSpeech() {
                 if (this.isSpeaking) {
@@ -592,7 +588,7 @@
 
                     const utterance = new SpeechSynthesisUtterance(textFinal);
                     utterance.lang = langToUse;
-                    utterance.rate = 0.9; // Sedikit diperlambat agar jelas
+                    utterance.rate = 0.7; // Sedikit diperlambat agar jelas
 
                     utterance.onend = () => {
                         this.isSpeaking = false;
