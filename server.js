@@ -5,18 +5,21 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(express.static('public'));
 
-// Bahasa yang didukung
 const supportedLanguages = {
   'id': 'Bahasa Indonesia',
   'en': 'English',
-  'ja': '日本語 (Japanese)'
+  'ja': '日本語 (Japanese)',
+  'zh': '中文 (Mandarin)',
+  'ko': '한국어 (Korean)',
+  'my': 'မြန်မာစာ (Burmese)',
+  'th': 'ไทย (Thai)',
+  'tl': 'Filipino (Tagalog)',
+  'fr': 'Français (French)'
 };
 
-// Route untuk halaman utama
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -27,8 +30,6 @@ app.get('/manifest', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'manifest.json'));
 });
 
-
-// Route untuk mendapatkan daftar bahasa
 app.get('/api/languages', (req, res) => {
   res.json(supportedLanguages);
 });
@@ -59,14 +60,35 @@ app.post('/api/translate', async (req, res) => {
       });
     }
 
-    // Siapkan prompt untuk Gemini
     const fromLanguageName = supportedLanguages[fromLang];
     const toLanguageName = supportedLanguages[toLang];
     
-    const prompt = `Terjemahkan teks berikut dari ${fromLanguageName} ke ${toLanguageName}. 
+    // --- LOGIKA PROMPT BARU ---
+    // Daftar bahasa yang butuh cara baca (transliterasi) agar TTS jalan
+    const complexScripts = ['my', 'th', 'ja', 'zh', 'ko'];
+    const needsTransliteration = complexScripts.includes(toLang);
+
+    let prompt;
+    
+    if (needsTransliteration) {
+        // Prompt khusus meminta format JSON berisi terjemahan DAN cara baca
+        prompt = `Role: Penerjemah profesional.
+Tugas: Terjemahkan teks "${text}" dari ${fromLanguageName} ke ${toLanguageName}.
+
+Instruksi Output:
+Berikan respon HANYA dalam format JSON valid (tanpa markdown code block).
+Struktur JSON:
+{
+  "translatedText": "hasil terjemahan dalam aksara asli",
+  "transliteration": "cara baca dalam huruf latin/alphabet agar orang asing bisa membacanya"
+}`;
+    } else {
+        // Prompt standar untuk bahasa latin
+        prompt = `Terjemahkan teks berikut dari ${fromLanguageName} ke ${toLanguageName}. 
 Berikan HANYA hasil terjemahan tanpa penjelasan tambahan:
 
 "${text}"`;
+    }
 
     // Validasi API key
     if (!process.env.GEMINI_APIKEY) {
@@ -81,20 +103,13 @@ Berikan HANYA hasil terjemahan tanpa penjelasan tambahan:
         'x-goog-api-key': process.env.GEMINI_APIKEY
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              }
-            ]
-          }
-        ],
+        contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.3,
           topK: 1,
           topP: 1,
-          maxOutputTokens: 2048
+          maxOutputTokens: 2048,
+          responseMimeType: needsTransliteration ? "application/json" : "text/plain"
         }
       })
     });
@@ -106,15 +121,34 @@ Berikan HANYA hasil terjemahan tanpa penjelasan tambahan:
       throw new Error(`Gemini API error: ${geminiResponse.status} - ${geminiData.error?.message || 'Unknown error'}`);
     }
     
-    // Ekstrak teks hasil terjemahan
-    const translatedText = geminiData.candidates[0]?.content?.parts[0]?.text?.trim();
+    let rawResponse = geminiData.candidates[0]?.content?.parts[0]?.text?.trim();
     
-    if (!translatedText) {
+    if (!rawResponse) {
       throw new Error('Tidak ada hasil terjemahan dari Gemini');
+    }
+
+    let translatedText = rawResponse;
+    let transliteration = '';
+
+    // --- PARSING JSON RESPON ---
+    if (needsTransliteration) {
+        try {
+            // Bersihkan markdown jika Gemini tidak sengaja menambahkannya (misal ```json ... ```)
+            const cleanJson = rawResponse.replace(/```json|```/g, '').trim();
+            const parsedData = JSON.parse(cleanJson);
+            
+            translatedText = parsedData.translatedText;
+            transliteration = parsedData.transliteration;
+        } catch (e) {
+            console.error("Gagal parsing JSON transliterasi:", e);
+            // Fallback: jika gagal parse, anggap seluruh respon adalah terjemahan
+            translatedText = rawResponse;
+        }
     }
 
     res.json({
       translatedText,
+      transliteration, // Mengirim cara baca ke frontend
       fromLanguage: fromLanguageName,
       toLanguage: toLanguageName,
       originalText: text
@@ -129,7 +163,6 @@ Berikan HANYA hasil terjemahan tanpa penjelasan tambahan:
   }
 });
 
-// Route untuk detect bahasa (opsional)
 app.post('/api/detect-language', async (req, res) => {
   try {
     const { text } = req.body;
@@ -138,12 +171,11 @@ app.post('/api/detect-language', async (req, res) => {
       return res.status(400).json({ error: 'Text harus diisi' });
     }
 
-    // Validasi API key
     if (!process.env.GEMINI_APIKEY) {
       return res.status(500).json({ error: 'GEMINI_APIKEY tidak dikonfigurasi' });
     }
 
-    const prompt = `Deteksi bahasa dari teks berikut dan berikan HANYA kode bahasa (id untuk Indonesia, en untuk Inggris, ja untuk Jepang):
+    const prompt = `Deteksi bahasa dari teks berikut dan berikan HANYA kode bahasa (id, en, ja, zh, ko, my, th, tl, fr):
 
 "${text}"`;
 
@@ -180,15 +212,26 @@ app.post('/api/detect-language', async (req, res) => {
     }
     let detectedLang = geminiData.candidates[0]?.content?.parts[0]?.text?.trim().toLowerCase();
     
-    // Normalisasi hasil deteksi
     if (detectedLang.includes('id') || detectedLang.includes('indonesia')) {
       detectedLang = 'id';
     } else if (detectedLang.includes('en') || detectedLang.includes('english')) {
       detectedLang = 'en';
     } else if (detectedLang.includes('ja') || detectedLang.includes('japanese')) {
       detectedLang = 'ja';
+    } else if (detectedLang.includes('zh') || detectedLang.includes('chinese') || detectedLang.includes('mandarin')) {
+      detectedLang = 'zh';
+    } else if (detectedLang.includes('ko') || detectedLang.includes('korean')) {
+      detectedLang = 'ko';
+    } else if (detectedLang.includes('my') || detectedLang.includes('burmese') || detectedLang.includes('myanmar')) {
+      detectedLang = 'my';
+    } else if (detectedLang.includes('th') || detectedLang.includes('thai')) {
+      detectedLang = 'th';
+    } else if (detectedLang.includes('tl') || detectedLang.includes('tagalog') || detectedLang.includes('filipino')) {
+      detectedLang = 'tl';
+    } else if (detectedLang.includes('fr') || detectedLang.includes('french')) {
+      detectedLang = 'fr';
     } else {
-      detectedLang = 'en'; // default ke English
+      detectedLang = 'en';
     }
 
     res.json({
@@ -205,13 +248,11 @@ app.post('/api/detect-language', async (req, res) => {
   }
 });
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Terjadi kesalahan server' });
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint tidak ditemukan' });
 });

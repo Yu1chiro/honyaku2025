@@ -45,12 +45,10 @@
 
         body {
             transition: background-color 0.3s ease, color 0.3s ease;
-            /* Prevent pull-to-refresh on mobile to feel more like an app */
             overscroll-behavior-y: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Smooth card hover only on desktop to save mobile resources */
         @media (min-width: 768px) {
             .bento-card {
                 transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -74,7 +72,6 @@
             border-radius: 20px;
         }
 
-        /* Reset Select Appearance */
         select {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -82,7 +79,6 @@
             background-image: none;
         }
 
-        /* Animations */
         @keyframes pulse-ring {
             0% {
                 transform: scale(0.8);
@@ -104,7 +100,6 @@
             animation: pulse-ring 2s infinite;
         }
 
-        /* Utility to prevent double tap zoom on buttons */
         .touch-manipulation {
             touch-action: manipulation;
         }
@@ -122,7 +117,7 @@
                     class="text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-tokyo-primary dark:to-tokyo-secondary tracking-tight">
                     Honyaku mi
                 </h1>
-                <p class="text-xs md:text-sm text-gray-500 mb-3 dark:text-tokyo-muted font-medium">Patch Update 1.0</p>
+                <p class="text-xs md:text-sm text-gray-500 mb-3 dark:text-tokyo-muted font-medium">Patch Update 1.2</p>
                 <p class="text-xs md:text-sm text-gray-500 dark:text-tokyo-muted font-medium">Dev by Yuii</p>
             </div>
 
@@ -180,6 +175,12 @@
                             <option value="id">🇮🇩 Indonesia</option>
                             <option value="en">🇺🇸 English</option>
                             <option value="ja">🇯🇵 日本語</option>
+                            <option value="zh">🇨🇳 Mandarin</option>
+                            <option value="ko">🇰🇷 Korean</option>
+                            <option value="my">🇲🇲 Myanmar</option>
+                            <option value="th">🇹🇭 Thailand</option>
+                            <option value="tl">🇵🇭 Philippines</option>
+                            <option value="fr">🇫🇷 French</option>
                         </select>
                         <i
                             class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></i>
@@ -231,6 +232,12 @@
                             <option value="en">🇺🇸 English</option>
                             <option value="id">🇮🇩 Indonesia</option>
                             <option value="ja">🇯🇵 日本語</option>
+                            <option value="zh">🇨🇳 Mandarin</option>
+                            <option value="ko">🇰🇷 Korean</option>
+                            <option value="my">🇲🇲 Myanmar</option>
+                            <option value="th">🇹🇭 Thailand</option>
+                            <option value="tl">🇵🇭 Philippines</option>
+                            <option value="fr">🇫🇷 French</option>
                         </select>
                         <i
                             class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></i>
@@ -316,7 +323,7 @@
                 navigator.serviceWorker.register('/sw').catch(console.error);
             });
         }
-        // --- Logika Tombol Urgent ---
+
         const urgentBtn = document.getElementById('urgentBtn');
         const urgentModal = document.getElementById('urgentModal');
         const urgentContent = document.getElementById('urgentContent');
@@ -324,14 +331,12 @@
         const sendWaBtn = document.getElementById('sendWaBtn');
         const urgentMessage = document.getElementById('urgentMessage');
 
-        // Nomor WhatsApp Tujuan (Ganti dengan nomor Anda, format 628xxx)
         const WA_NUMBER = '6281236715460';
 
         function toggleUrgentModal(show) {
             if (show) {
                 urgentModal.classList.remove('hidden', 'flex');
                 urgentModal.classList.add('flex');
-                // Sedikit delay agar animasi transisi jalan
                 setTimeout(() => {
                     urgentModal.classList.remove('opacity-0');
                     urgentContent.classList.remove('scale-95');
@@ -351,22 +356,19 @@
         urgentBtn.addEventListener('click', () => toggleUrgentModal(true));
         closeUrgentBtn.addEventListener('click', () => toggleUrgentModal(false));
 
-        // Klik di luar modal untuk menutup
         urgentModal.addEventListener('click', (e) => {
             if (e.target === urgentModal) toggleUrgentModal(false);
         });
 
         sendWaBtn.addEventListener('click', () => {
-            const name = urgentName.value.trim() || 'Pengguna'; // Default jika kosong
+            const name = urgentName.value.trim() || 'Pengguna';
             const text = urgentMessage.value.trim();
 
             if (!text) {
-                // Ganti dengan showToast Anda jika ada
                 alert('Mohon isi detail bug/error!');
                 return;
             }
 
-            // Format pesan WA
             const message = `*User*\n\n *Name:* ${name}\n*Reporting:* ${text}`;
 
             const encodedText = encodeURIComponent(message);
@@ -375,15 +377,11 @@
             window.open(url, '_blank');
             toggleUrgentModal(false);
 
-            // Reset form
             urgentMessage.value = '';
             urgentName.value = '';
         });
     </script>
     <script>
-        // --- Service Worker & Theme Logic ---
-
-        // Theme Logic
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const html = document.documentElement;
@@ -410,7 +408,6 @@
         themeToggle.addEventListener('click', () => setDark(!html.classList.contains('dark')));
         initTheme();
 
-        // --- Translator Logic ---
         class TranslatorApp {
             constructor() {
                 this.initializeElements();
@@ -420,7 +417,6 @@
             }
 
             initializeElements() {
-                // Element selection remains same
                 this.elements = {
                     fromLang: document.getElementById('fromLang'),
                     toLang: document.getElementById('toLang'),
@@ -457,13 +453,11 @@
 
                 this.elements.inputText.addEventListener('input', () => this.updateCharCount());
 
-                // Disable Enter key translation on mobile to allow multiline typing easily
                 this.elements.inputText.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && e.ctrlKey) this.translateText();
                 });
             }
 
-            // ... [SpeechRecognition methods retain same logic as previous code] ...
             setupSpeechRecognition() {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (SpeechRecognition) {
@@ -494,14 +488,13 @@
                 }
             }
 
-            async translateText() {
+           async translateText() {
                 const text = this.elements.inputText.value.trim();
                 if (!text) return this.showToast('Masukkan teks dulu', 'error');
 
                 this.showLoading();
 
                 try {
-                    // Use real endpoint
                     const response = await fetch('/api/translate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -516,7 +509,29 @@
 
                     if (!response.ok) throw new Error(data.error || 'Gagal');
 
-                    this.elements.outputText.textContent = data.translatedText;
+                    // LOGIKA DISPLAY BARU: Handle Transliterasi
+                    if (data.transliteration) {
+                        // Jika ada cara baca, tampilkan layout bertumpuk
+                        this.elements.outputText.innerHTML = `
+                            <div class="flex flex-col gap-2">
+                                <span class="text-lg md:text-xl font-medium leading-relaxed">${data.translatedText}</span>
+                                <div class="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-[#2a2f4a] p-2.5 rounded-lg border border-purple-100 dark:border-purple-900/30">
+                                    <i class="fas fa-spell-check text-xs opacity-70"></i>
+                                    <span class="font-mono italic">${data.transliteration}</span>
+                                </div>
+                            </div>
+                        `;
+                        // Simpan data di elemen agar bisa dibaca TTS
+                        this.elements.outputText.dataset.reading = data.transliteration;
+                        this.elements.outputText.dataset.raw = data.translatedText;
+                    } else {
+                        // Tampilan standar
+                        this.elements.outputText.textContent = data.translatedText;
+                        // Hapus dataset lama
+                        this.elements.outputText.removeAttribute('data-reading');
+                        this.elements.outputText.removeAttribute('data-raw');
+                    }
+
                     this.elements.outputText.classList.remove('italic', 'text-gray-400', 'dark:text-tokyo-muted/40');
                     this.elements.outputText.classList.add('text-gray-800', 'dark:text-tokyo-text');
 
@@ -530,6 +545,84 @@
                 }
             }
 
+            // GANTI METHOD toggleSpeech LAMA DENGAN INI (FIX TTS MYANMAR/THAI)
+            toggleSpeech() {
+                if (this.isSpeaking) {
+                    window.speechSynthesis.cancel();
+                    this.isSpeaking = false;
+                    this.elements.speakBtn.classList.remove('text-purple-500', 'animate-pulse');
+                } else {
+                    // Ambil teks: Prioritaskan cara baca (transliterasi) jika ada, baru teks asli
+                    const transliteration = this.elements.outputText.dataset.reading;
+                    
+                    // Untuk copy clipboard kita ambil raw, tapi untuk suara kita cek dulu
+                    let textToSpeak = this.elements.outputText.textContent;
+                    
+                    // Jika ada dataset raw, berarti struktur HTML berubah (ada transliterasi)
+                    if (this.elements.outputText.dataset.raw) {
+                        textToSpeak = this.elements.outputText.dataset.raw;
+                    }
+
+                    if (!textToSpeak && !transliteration) return;
+
+                    const targetLang = this.elements.toLang.value;
+                    
+                    // --- LOGIKA PENTING: PEMILIHAN SUARA ---
+                    // Browser biasanya tidak punya suara 'my-MM' (Myanmar) atau kadang 'th-TH' (Thai)
+                    // Jadi kita paksa baca transliterasinya menggunakan aksen Inggris/Indo
+                    
+                    let langToUse = 'en-US'; // Default fallback
+                    let textFinal = textToSpeak;
+
+                    const difficultLangs = ['my', 'th', 'km', 'lo']; // Myanmar, Thai, Khmer, Lao
+
+                    if (difficultLangs.includes(targetLang) && transliteration) {
+                        // Kasus Khusus: Baca Latin-nya
+                        textFinal = transliteration;
+                        langToUse = 'id-ID'; // Gunakan aksen Indonesia karena pelafalan latinnya jelas
+                    } else {
+                        // Kasus Normal: Baca teks asli sesuai kode bahasa
+                        textFinal = textToSpeak;
+                        const langMap = { 
+                            'id': 'id-ID', 'en': 'en-US', 'ja': 'ja-JP', 'zh': 'zh-CN', 'ko': 'ko-KR',
+                            'fr': 'fr-FR', 'tl': 'fil-PH' 
+                        };
+                        langToUse = langMap[targetLang] || 'en-US';
+                    }
+
+                    const utterance = new SpeechSynthesisUtterance(textFinal);
+                    utterance.lang = langToUse;
+                    utterance.rate = 0.9; // Sedikit diperlambat agar jelas
+
+                    utterance.onend = () => {
+                        this.isSpeaking = false;
+                        this.elements.speakBtn.classList.remove('text-purple-500', 'animate-pulse');
+                    };
+                    
+                    // Error handler jika bahasa tidak didukung browser sama sekali
+                    utterance.onerror = (e) => {
+                        console.log("TTS Error:", e);
+                        this.isSpeaking = false;
+                        this.elements.speakBtn.classList.remove('text-purple-500', 'animate-pulse');
+                    };
+
+                    this.elements.speakBtn.classList.add('text-purple-500', 'animate-pulse');
+                    this.isSpeaking = true;
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+            
+            // UPDATE JUGA METHOD COPY AGAR TIDAK MENG-COPY CARA BACANYA
+            async copyResult() {
+                // Prioritaskan mengambil teks asli (raw) jika tersedia di dataset
+                const text = this.elements.outputText.dataset.raw || this.elements.outputText.textContent;
+                
+                if (!text) return;
+                try {
+                    await navigator.clipboard.writeText(text);
+                    this.showToast('Teks disalin!');
+                } catch (err) { this.showToast('Gagal menyalin', 'error'); }
+            }
             swapLanguages() {
                 const from = this.elements.fromLang.value;
                 const to = this.elements.toLang.value;
@@ -544,7 +637,6 @@
                     this.elements.outputText.textContent = input;
                 }
 
-                // Animation
                 const btns = [this.elements.swapBtn, this.elements.swapBtnMobile];
                 btns.forEach(btn => {
                     if (btn) {
@@ -556,7 +648,10 @@
 
             startVoiceRecognition() {
                 if (!this.recognition) return;
-                const langMap = { 'id': 'id-ID', 'en': 'en-US', 'ja': 'ja-JP' };
+                const langMap = { 
+                    'id': 'id-ID', 'en': 'en-US', 'ja': 'ja-JP', 'zh': 'zh-CN', 'ko': 'ko-KR',
+                    'my': 'my-MM', 'th': 'th-TH', 'tl': 'tl-PH', 'fr': 'fr-FR'
+                };
                 this.recognition.lang = langMap[this.elements.fromLang.value] || 'en-US';
                 this.recognition.start();
             }
@@ -573,36 +668,7 @@
                 this.updateCharCount();
             }
 
-            async copyResult() {
-                const text = this.elements.outputText.textContent;
-                if (!text) return;
-                try {
-                    await navigator.clipboard.writeText(text);
-                    this.showToast('Teks disalin!');
-                } catch (err) { this.showToast('Gagal menyalin', 'error'); }
-            }
-
-            toggleSpeech() {
-                if (this.isSpeaking) {
-                    window.speechSynthesis.cancel();
-                    this.isSpeaking = false;
-                    this.elements.speakBtn.classList.remove('text-purple-500', 'animate-pulse');
-                } else {
-                    const text = this.elements.outputText.textContent;
-                    if (!text) return;
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    const langMap = { 'id': 'id-ID', 'en': 'en-US', 'ja': 'ja-JP' };
-                    utterance.lang = langMap[this.elements.toLang.value];
-                    utterance.onend = () => {
-                        this.isSpeaking = false;
-                        this.elements.speakBtn.classList.remove('text-purple-500', 'animate-pulse');
-                    };
-                    this.elements.speakBtn.classList.add('text-purple-500', 'animate-pulse');
-                    this.isSpeaking = true;
-                    window.speechSynthesis.speak(utterance);
-                }
-            }
-
+           
             updateCharCount() {
                 const len = this.elements.inputText.value.length;
                 this.elements.charCount.textContent = `${len}/5000`;
