@@ -20,6 +20,12 @@ const supportedLanguages = {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+app.get('/sw', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'sw.js'));
+});
+app.get('/manifest', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'manifest.json'));
+});
 
 
 // Route untuk mendapatkan daftar bahasa

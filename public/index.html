@@ -7,7 +7,7 @@
     <title>Yuii Translator</title>
     <link rel="shortcut icon" href="https://ucarecdn.com/ebe81342-64fc-4e47-bcc5-632c0552c657/11zon_cropped.png"
         type="image/x-icon">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest">
     <meta name="theme-color" content="#1a1b26">
     <link rel="apple-touch-icon" href="https://ucarecdn.com/ebe81342-64fc-4e47-bcc5-632c0552c657/11zon_cropped.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,7 +39,7 @@
             }
         }
     </script>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -276,7 +276,7 @@
 
             <div class="col-span-1 md:col-span-12 mt-2 md:mt-4">
                 <button id="translateBtn"
-                  class="touch-manipulation w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 dark:from-tokyo-primary dark:to-tokyo-secondary text-white font-bold text-base md:text-lg shadow-lg shadow-blue-500/30 dark:shadow-blue-900/20 hover:brightness-90 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-3">
+                    class="touch-manipulation w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 dark:from-tokyo-primary dark:to-tokyo-secondary text-white font-bold text-base md:text-lg shadow-lg shadow-blue-500/30 dark:shadow-blue-900/20 hover:brightness-90 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-3">
                     <span>Terjemahkan</span>
                     <i class="fas fa-arrow-right text-sm"></i>
                 </button>
@@ -311,9 +311,9 @@
         </div>
     </div>
     <script>
-         if ('serviceWorker' in navigator) {
+        if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(console.error);
+                navigator.serviceWorker.register('/sw').catch(console.error);
             });
         }
         // --- Logika Tombol Urgent ---
