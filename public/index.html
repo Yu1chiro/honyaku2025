@@ -585,7 +585,7 @@
                         };
                         langToUse = langMap[targetLang] || 'en-US';
                     }
-
+                    // update
                     const utterance = new SpeechSynthesisUtterance(textFinal);
                     utterance.lang = langToUse;
                     utterance.rate = 0.7; // Sedikit diperlambat agar jelas

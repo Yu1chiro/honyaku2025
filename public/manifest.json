@@ -1,6 +1,6 @@
 {
-  "name": "Honyaku",
-  "short_name": "Yuii-dev",
+  "name": "Honyaku App",
+  "short_name": "Honyaku App",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a1b26",
