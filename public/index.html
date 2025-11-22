@@ -1,242 +1,431 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="light">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>翻訳 2025</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yuii Translator</title>
+    <link rel="shortcut icon" href="https://ucarecdn.com/ebe81342-64fc-4e47-bcc5-632c0552c657/11zon_cropped.png"
+        type="image/x-icon">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1a1b26">
+    <link rel="apple-touch-icon" href="https://ucarecdn.com/ebe81342-64fc-4e47-bcc5-632c0552c657/11zon_cropped.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-      <style>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        tokyo: {
+                            base: '#1a1b26',
+                            surface: '#24283b',
+                            primary: '#7aa2f7',
+                            secondary: '#bb9af7',
+                            accent: '#7dcfff',
+                            success: '#9ece6a',
+                            warning: '#e0af68',
+                            error: '#f7768e',
+                            text: '#c0caf5',
+                            muted: '#565f89'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
         body {
-            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            /* Prevent pull-to-refresh on mobile to feel more like an app */
+            overscroll-behavior-y: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
-        }
-        
-        .glass-effect {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        }
-        
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-        }
-        
-        .voice-wave {
-            animation: wave 1.5s ease-in-out infinite alternate;
-        }
-        
-        @keyframes wave {
-            0% { transform: scaleY(1); }
-            100% { transform: scaleY(0.3); }
-        }
-        
-        /* Mobile first adjustments */
-        @media (max-width: 768px) {
-            .container {
-                padding-left: 1rem;
-                padding-right: 1rem;
+
+        /* Smooth card hover only on desktop to save mobile resources */
+        @media (min-width: 768px) {
+            .bento-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
             }
-            
-            .glass-effect {
-                background: rgba(255, 255, 255, 0.2);
-            }
-            
-            select, textarea, button {
-                font-size: 16px !important; /* Prevent zoom on iOS */
+
+            .bento-card:hover {
+                transform: translateY(-2px);
             }
         }
-        
-        /* Improved focus states for accessibility */
-        select:focus, textarea:focus, button:focus {
-            outline: 2px solid rgba(255, 255, 255, 0.5);
-            outline-offset: 2px;
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
         }
-        
-        /* Better contrast for text */
-        .text-high-contrast {
-            color: #FFFFFF;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
         }
-        
-        /* Improved button states */
-        .btn-transition {
-            transition: all 0.2s ease-in-out;
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #565f89;
+            border-radius: 20px;
         }
-        
-        .btn-transition:active {
-            transform: scale(0.97);
+
+        /* Reset Select Appearance */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: none;
+        }
+
+        /* Animations */
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.8);
+                box-shadow: 0 0 0 0 rgba(247, 118, 142, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(247, 118, 142, 0);
+            }
+
+            100% {
+                transform: scale(0.8);
+                box-shadow: 0 0 0 0 rgba(247, 118, 142, 0);
+            }
+        }
+
+        .recording-pulse {
+            animation: pulse-ring 2s infinite;
+        }
+
+        /* Utility to prevent double tap zoom on buttons */
+        .touch-manipulation {
+            touch-action: manipulation;
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen flex flex-col">
-    <!-- Header -->
-    <header class="text-center py-5 px-4">
-        <h1 class="text-2xl md:text-3xl font-bold text-white mb-1 tracking-tight">
-            翻訳へようこそ！
-        </h1>
-        <p class="text-blue-100 text-sm md:text-base opacity-90 mb-2">簡単にするための翻訳。</p>
-          <p class="text-white text-sm text-center">&copy; Yuii 2025 </p>
-    </header>
 
-    <!-- Main Container -->
-    <div class="container mx-auto px-4 pb-8 flex-1">
-        <div class="max-w-4xl mx-auto">
-            <!-- Language Selector -->
-            <div class="glass-effect rounded-xl p-4 md:p-5 mb-5 border border-white/20">
-                <div class="flex flex-col md:flex-row items-center justify-center gap-3">
-                    <!-- From Language -->
-                    <div class="w-full md:w-auto flex-1">
-                        <label class="block text-white text-xs font-medium mb-1 ml-1 opacity-80">Dari</label>
-                        <select id="fromLang" class="w-full px-4 py-3 rounded-lg bg-white/15 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur text-base">
-                            <option value="id" class="text-gray-800">🇮🇩 Indonesia</option>
-                            <option value="en" class="text-gray-800">🇺🇸 English</option>
-                            <option value="ja" class="text-gray-800">🇯🇵 日本語</option>
-                        </select>
-                    </div>
+<body
+    class="bg-gray-50 text-gray-800 dark:bg-tokyo-base dark:text-tokyo-text font-sans min-h-[100dvh] flex flex-col selection:bg-blue-500 selection:text-white">
 
-                    <!-- Swap Button -->
-                    <div class="py-3 md:py-0 md:px-2 md:self-end md:mb-1">
-                        <button id="swapBtn" class="w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white btn-transition transform hover:rotate-180 transition-all duration-300">
-                            <i class="fas fa-exchange-alt text-sm md:text-base"></i>
+    <main class="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col justify-center">
+
+        <header class="flex items-center justify-between mb-6 md:mb-8">
+            <div>
+                <h1
+                    class="text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-tokyo-primary dark:to-tokyo-secondary tracking-tight">
+                    Honyaku mi
+                </h1>
+                <p class="text-xs md:text-sm text-gray-500 mb-3 dark:text-tokyo-muted font-medium">Patch Update 1.0</p>
+                <p class="text-xs md:text-sm text-gray-500 dark:text-tokyo-muted font-medium">Dev by Yuii</p>
+            </div>
+
+            <div class="flex items-center gap-2 md:gap-3">
+                <button id="urgentBtn"
+                    class="touch-manipulation h-10 px-3 md:px-4 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 text-xs md:text-sm font-medium">
+                    <i class="fas fa-bug"></i>
+                    <span>Report</span>
+                </button>
+
+                <button id="themeToggle"
+                    class="touch-manipulation p-2 rounded-full bg-white dark:bg-tokyo-surface shadow-sm border border-gray-200 dark:border-gray-700 w-10 h-10 flex items-center justify-center transition-colors">
+                    <i id="themeIcon" class="fas fa-sun text-orange-400 text-lg"></i>
+                </button>
+            </div>
+
+            <div id="urgentModal"
+                class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[60] flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+                <div class="bg-white dark:bg-tokyo-surface w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 transform scale-95 transition-transform duration-300"
+                    id="urgentContent">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Report bug</h3>
+                        <button id="closeUrgentBtn" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                            <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
 
-                    <!-- To Language -->
-                    <div class="w-full md:w-auto flex-1">
-                        <label class="block text-white text-xs font-medium mb-1 ml-1 opacity-80">Ke</label>
-                        <select id="toLang" class="w-full px-4 py-3 rounded-lg bg-white/15 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur text-base">
-                            <option value="en" class="text-gray-800">🇺🇸 English</option>
-                            <option value="id" class="text-gray-800">🇮🇩 Indonesia</option>
-                            <option value="ja" class="text-gray-800">🇯🇵 日本語</option>
+                    <input type="text" id="urgentName"
+                        class="w-full bg-gray-50 dark:bg-[#1f2335] rounded-xl p-4 text-gray-700 dark:text-tokyo-text border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-red-400 outline-none mb-3 text-sm"
+                        placeholder="Your Name">
+
+                    <textarea id="urgentMessage" rows="4"
+                        class="w-full bg-gray-50 dark:bg-[#1f2335] rounded-xl p-4 text-gray-700 dark:text-tokyo-text border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-red-400 outline-none resize-none mb-4 text-sm"
+                        placeholder="Write error or bug report (e.g. API failure, design glitch)..."></textarea>
+
+                    <button id="sendWaBtn"
+                        class="w-full py-3 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold shadow-lg shadow-green-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <i class="fab fa-whatsapp text-lg"></i>
+                        <span>Kirim ke WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 relative">
+
+            <div
+                class="col-span-1 md:col-span-6 bg-white dark:bg-tokyo-surface rounded-2xl md:rounded-3xl shadow-sm md:shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col h-auto min-h-[220px] md:h-[400px] relative z-0">
+
+                <div
+                    class="flex items-center justify-between p-3 md:p-4 border-b border-gray-100 dark:border-gray-700/50">
+                    <div class="relative w-1/2">
+                        <select id="fromLang"
+                            class="w-full bg-gray-50 dark:bg-[#1f2335] text-gray-800 dark:text-tokyo-primary font-semibold py-2 pl-3 pr-8 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-shadow">
+                            <option value="id">🇮🇩 Indonesia</option>
+                            <option value="en">🇺🇸 English</option>
+                            <option value="ja">🇯🇵 日本語</option>
                         </select>
+                        <i
+                            class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></i>
+                    </div>
+
+                    <div class="flex gap-1">
+                        <button id="voiceBtn"
+                            class="touch-manipulation w-10 h-10 md:w-9 md:h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-tokyo-muted hover:bg-blue-50 dark:hover:bg-gray-700/30 hover:text-blue-500 transition-colors active:scale-95">
+                            <i class="fas fa-microphone text-lg md:text-base"></i>
+                        </button>
+                        <button id="clearBtn"
+                            class="touch-manipulation w-10 h-10 md:w-9 md:h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-tokyo-muted hover:bg-red-50 dark:hover:bg-gray-700/30 hover:text-red-500 transition-colors active:scale-95">
+                            <i class="fas fa-trash-alt text-lg md:text-base"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 p-3 md:p-4 relative">
+                    <textarea id="inputText"
+                        class="w-full h-full bg-transparent border-none focus:ring-0 resize-none text-base md:text-lg leading-relaxed text-gray-700 dark:text-tokyo-text placeholder-gray-400 dark:placeholder-tokyo-muted/50 custom-scroll outline-none pb-6"
+                        placeholder="Ketik teks di sini..." maxlength="5000"></textarea>
+                    <div class="absolute bottom-2 right-3 text-[10px] md:text-xs text-gray-400 dark:text-tokyo-muted font-mono"
+                        id="charCount">0/5000</div>
+                </div>
+            </div>
+
+            <div class="col-span-1 md:hidden flex justify-center -my-5 relative z-10 pointer-events-none">
+                <button id="swapBtnMobile"
+                    class="pointer-events-auto w-12 h-12 bg-blue-600 dark:bg-tokyo-primary text-white rounded-full shadow-lg shadow-blue-500/30 flex items-center justify-center active:scale-90 transition-transform touch-manipulation border-4 border-gray-50 dark:border-tokyo-base">
+                    <i class="fas fa-exchange-alt transform rotate-90 text-lg"></i>
+                </button>
+            </div>
+
+            <div class="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                <button id="swapBtn"
+                    class="w-10 h-10 bg-blue-600 dark:bg-tokyo-primary text-white rounded-xl shadow-lg hover:scale-110 active:scale-95 transition-all flex items-center justify-center border-4 border-gray-50 dark:border-tokyo-base">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+            </div>
+
+            <div
+                class="col-span-1 md:col-span-6 bg-gray-100 dark:bg-[#1f2335] rounded-2xl md:rounded-3xl shadow-inner border border-transparent dark:border-gray-800 flex flex-col h-auto min-h-[220px] md:h-[400px]">
+
+                <div
+                    class="flex items-center justify-between p-3 md:p-4 border-b border-gray-200 dark:border-gray-700/50">
+                    <div class="relative w-1/2">
+                        <select id="toLang"
+                            class="w-full bg-white dark:bg-tokyo-surface text-gray-800 dark:text-tokyo-secondary font-semibold py-2 pl-3 pr-8 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-purple-400/50 shadow-sm transition-shadow">
+                            <option value="en">🇺🇸 English</option>
+                            <option value="id">🇮🇩 Indonesia</option>
+                            <option value="ja">🇯🇵 日本語</option>
+                        </select>
+                        <i
+                            class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></i>
+                    </div>
+
+                    <div class="flex gap-1">
+                        <button id="speakBtn"
+                            class="touch-manipulation w-10 h-10 md:w-9 md:h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-tokyo-muted hover:bg-white dark:hover:bg-gray-700/30 hover:text-purple-500 transition-colors active:scale-95 disabled:opacity-30"
+                            disabled>
+                            <i class="fas fa-volume-up text-lg md:text-base"></i>
+                        </button>
+                        <button id="copyBtn"
+                            class="touch-manipulation w-10 h-10 md:w-9 md:h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-tokyo-muted hover:bg-white dark:hover:bg-gray-700/30 hover:text-green-500 transition-colors active:scale-95 disabled:opacity-30"
+                            disabled>
+                            <i class="fas fa-copy text-lg md:text-base"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 p-4 flex items-start relative">
+                    <div id="loadingIndicator"
+                        class="hidden absolute inset-0 bg-gray-100/80 dark:bg-[#1f2335]/80 backdrop-blur-[1px] z-20 items-center justify-center rounded-b-2xl">
+                        <div class="flex flex-col items-center">
+                            <svg class="animate-spin h-8 w-8 text-purple-600 dark:text-tokyo-secondary mb-2"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            <span class="text-xs font-medium text-gray-500 dark:text-tokyo-muted">Translating...</span>
+                        </div>
+                    </div>
+
+                    <div id="outputText"
+                        class="w-full h-full text-base md:text-lg leading-relaxed text-gray-600 dark:text-tokyo-text/90 custom-scroll overflow-y-auto break-words pb-2">
+                        <span class="text-gray-400 dark:text-tokyo-muted/40 italic">Terjemahan akan muncul di
+                            sini...</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Translation Area -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <!-- Input Section -->
-                <div class="glass-effect rounded-xl border border-white/20 overflow-hidden flex flex-col">
-                    <!-- Input Header -->
-                    <div class="bg-white/10 px-4 py-3 border-b border-white/20">
-                        <div class="flex items-center justify-between">
-                            <span class="text-white font-medium text-sm md:text-base" id="fromLangLabel">Bahasa Indonesia</span>
-                            <div class="flex gap-2">
-                                <button id="voiceBtn" class="w-8 h-8 md:w-9 md:h-9 bg-rose-500 hover:bg-rose-600 rounded-full flex items-center justify-center text-white btn-transition">
-                                    <i class="fas fa-microphone text-xs md:text-sm"></i>
-                                </button>
-                                <button id="clearBtn" class="w-8 h-8 md:w-9 md:h-9 bg-slate-500 hover:bg-slate-600 rounded-full flex items-center justify-center text-white btn-transition">
-                                    <i class="fas fa-trash text-xs md:text-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Input Area -->
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea 
-                            id="inputText" 
-                            placeholder="Ketik atau gunakan voice untuk memasukkan teks..."
-                            class="w-full h-32 md:h-40 bg-transparent text-white placeholder-blue-100 placeholder-opacity-80 resize-none focus:outline-none text-base md:text-lg leading-relaxed flex-1"
-                            maxlength="5000"
-                        ></textarea>
-                        <div class="flex justify-between items-center mt-3 pt-2 border-t border-white/10">
-                            <span class="text-blue-100 text-xs md:text-sm opacity-80" id="charCount">0/5000</span>
-                            <button id="translateBtn" class="px-4 py-2 md:px-5 md:py-2.5 bg-gray-600 hover:bg-gray-800 text-white rounded-lg font-medium transition-all duration-300 disabled:opacity-50 text-sm md:text-base btn-transition">
-                                Translate <i class="fas fa-arrow-right mr-1.5 text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Output Section -->
-                <div class="glass-effect rounded-xl border border-white/20 overflow-hidden flex flex-col">
-                    <!-- Output Header -->
-                    <div class="bg-white/10 px-4 py-3 border-b border-white/20">
-                        <div class="flex items-center justify-between">
-                            <span class="text-white font-medium text-sm md:text-base" id="toLangLabel">English</span>
-                            <div class="flex gap-2">
-                                <button id="copyBtn" class="w-8 h-8 md:w-9 md:h-9 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white btn-transition disabled:opacity-40" disabled>
-                                    <i class="fas fa-copy text-xs md:text-sm"></i>
-                                </button>
-                                <button id="speakBtn" class="w-8 h-8 md:w-9 md:h-9 bg-violet-500 hover:bg-violet-600 rounded-full flex items-center justify-center text-white btn-transition disabled:opacity-40" disabled>
-                                    <i class="fas fa-volume-up text-xs md:text-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Output Area -->
-                    <div class="p-4 flex-1">
-                        <div 
-                            id="outputText" 
-                            class="w-full h-32 md:h-40 bg-transparent text-blue-100 text-base md:text-lg leading-relaxed flex items-center justify-center text-center p-2 opacity-90"
-                        >
-                            Hasil terjemahan akan muncul di sini...
-                        </div>
-                    </div>
-                </div>
+            <div class="col-span-1 md:col-span-12 mt-2 md:mt-4">
+                <button id="translateBtn"
+                  class="touch-manipulation w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 dark:from-tokyo-primary dark:to-tokyo-secondary text-white font-bold text-base md:text-lg shadow-lg shadow-blue-500/30 dark:shadow-blue-900/20 hover:brightness-90 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-3">
+                    <span>Terjemahkan</span>
+                    <i class="fas fa-arrow-right text-sm"></i>
+                </button>
             </div>
+
         </div>
-    </div>
+    </main>
 
-    <!-- Voice Recording Indicator -->
-    <div id="voiceIndicator" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="glass-effect rounded-xl p-6 md:p-7 text-center border border-white/20 max-w-xs w-full">
-            <div class="flex justify-center mb-4">
-                <div class="w-16 h-16 md:w-20 md:h-20 bg-rose-500 rounded-full flex items-center justify-center pulse-animation">
-                    <i class="fas fa-microphone text-xl text-white"></i>
-                </div>
+    <div id="voiceIndicator"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex-col items-center justify-center p-4 transition-opacity">
+        <div
+            class="bg-white dark:bg-tokyo-surface p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-xs w-full border border-gray-200 dark:border-gray-700">
+            <div
+                class="w-24 h-24 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6 recording-pulse">
+                <i class="fas fa-microphone text-4xl text-red-500 dark:text-tokyo-error"></i>
             </div>
-            <p class="text-white text-base font-medium mb-2">Speech Now</p>
-            <p class="text-blue-200 text-xs mb-4 opacity-90"></p>
-            <button id="stopVoiceBtn" class="px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg font-medium transition-all duration-300 text-sm md:text-base btn-transition">
-                <i class="fas fa-stop mr-1.5 text-xs"></i>Stop
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Mendengarkan...</h3>
+            <p class="text-gray-500 dark:text-tokyo-muted text-sm text-center mb-8">Bicara sekarang</p>
+            <button id="stopVoiceBtn"
+                class="w-full py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white font-medium hover:bg-gray-300 transition-colors">
+                Batal
             </button>
         </div>
     </div>
 
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-40 p-4">
-        <div class="glass-effect rounded-xl p-6 md:p-7 text-center border border-white/20 max-w-xs w-full">
-            <div class="animate-spin w-10 h-10 md:w-12 md:h-12 border-4 border-indigo-400 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p class="text-white font-medium text-sm md:text-base">Memproses terjemahan...</p>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-4 right-0 transform translate-x-full transition-transform duration-300 z-50 max-w-sm">
-        <div class="glass-effect rounded-lg p-3 border border-white/20 text-white">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle text-emerald-300 mr-2 text-sm"></i>
-                <span id="toastMessage" class="text-sm">Teks berhasil disalin!</span>
-            </div>
+    <div id="toast"
+        class="fixed bottom-8 left-1/2 -translate-x-1/2 transform translate-y-24 opacity-0 transition-all duration-300 z-50 w-max max-w-[90%]">
+        <div
+            class="bg-gray-900/90 dark:bg-tokyo-primary/90 backdrop-blur-sm text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-3 border border-white/10">
+            <i class="fas fa-check-circle text-green-400"></i>
+            <span id="toastMessage" class="font-medium text-sm truncate">Berhasil!</span>
         </div>
     </div>
     <script>
+         if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(console.error);
+            });
+        }
+        // --- Logika Tombol Urgent ---
+        const urgentBtn = document.getElementById('urgentBtn');
+        const urgentModal = document.getElementById('urgentModal');
+        const urgentContent = document.getElementById('urgentContent');
+        const closeUrgentBtn = document.getElementById('closeUrgentBtn');
+        const sendWaBtn = document.getElementById('sendWaBtn');
+        const urgentMessage = document.getElementById('urgentMessage');
+
+        // Nomor WhatsApp Tujuan (Ganti dengan nomor Anda, format 628xxx)
+        const WA_NUMBER = '6281236715460';
+
+        function toggleUrgentModal(show) {
+            if (show) {
+                urgentModal.classList.remove('hidden', 'flex');
+                urgentModal.classList.add('flex');
+                // Sedikit delay agar animasi transisi jalan
+                setTimeout(() => {
+                    urgentModal.classList.remove('opacity-0');
+                    urgentContent.classList.remove('scale-95');
+                    urgentContent.classList.add('scale-100');
+                }, 10);
+            } else {
+                urgentModal.classList.add('opacity-0');
+                urgentContent.classList.remove('scale-100');
+                urgentContent.classList.add('scale-95');
+                setTimeout(() => {
+                    urgentModal.classList.add('hidden');
+                    urgentModal.classList.remove('flex');
+                }, 300);
+            }
+        }
+
+        urgentBtn.addEventListener('click', () => toggleUrgentModal(true));
+        closeUrgentBtn.addEventListener('click', () => toggleUrgentModal(false));
+
+        // Klik di luar modal untuk menutup
+        urgentModal.addEventListener('click', (e) => {
+            if (e.target === urgentModal) toggleUrgentModal(false);
+        });
+
+        sendWaBtn.addEventListener('click', () => {
+            const name = urgentName.value.trim() || 'Pengguna'; // Default jika kosong
+            const text = urgentMessage.value.trim();
+
+            if (!text) {
+                // Ganti dengan showToast Anda jika ada
+                alert('Mohon isi detail bug/error!');
+                return;
+            }
+
+            // Format pesan WA
+            const message = `*User*\n\n *Name:* ${name}\n*Reporting:* ${text}`;
+
+            const encodedText = encodeURIComponent(message);
+            const url = `https://wa.me/${WA_NUMBER}?text=${encodedText}`;
+
+            window.open(url, '_blank');
+            toggleUrgentModal(false);
+
+            // Reset form
+            urgentMessage.value = '';
+            urgentName.value = '';
+        });
+    </script>
+    <script>
+        // --- Service Worker & Theme Logic ---
+
+        // Theme Logic
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const html = document.documentElement;
+
+        function initTheme() {
+            const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            setDark(isDark);
+        }
+
+        function setDark(isDark) {
+            if (isDark) {
+                html.classList.add('dark');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                themeIcon.classList.replace('text-orange-400', 'text-indigo-300');
+                localStorage.theme = 'dark';
+            } else {
+                html.classList.remove('dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                themeIcon.classList.replace('text-indigo-300', 'text-orange-400');
+                localStorage.theme = 'light';
+            }
+        }
+
+        themeToggle.addEventListener('click', () => setDark(!html.classList.contains('dark')));
+        initTheme();
+
+        // --- Translator Logic ---
         class TranslatorApp {
             constructor() {
                 this.initializeElements();
                 this.attachEventListeners();
                 this.setupSpeechRecognition();
-                this.updateLanguageLabels();
-                this.isSpeaking = false; // Tambahkan state untuk melacak status berbicara
+                this.isSpeaking = false;
             }
 
             initializeElements() {
+                // Element selection remains same
                 this.elements = {
                     fromLang: document.getElementById('fromLang'),
                     toLang: document.getElementById('toLang'),
                     swapBtn: document.getElementById('swapBtn'),
+                    swapBtnMobile: document.getElementById('swapBtnMobile'),
                     inputText: document.getElementById('inputText'),
                     outputText: document.getElementById('outputText'),
                     translateBtn: document.getElementById('translateBtn'),
@@ -245,8 +434,6 @@
                     copyBtn: document.getElementById('copyBtn'),
                     speakBtn: document.getElementById('speakBtn'),
                     charCount: document.getElementById('charCount'),
-                    fromLangLabel: document.getElementById('fromLangLabel'),
-                    toLangLabel: document.getElementById('toLangLabel'),
                     voiceIndicator: document.getElementById('voiceIndicator'),
                     stopVoiceBtn: document.getElementById('stopVoiceBtn'),
                     loadingIndicator: document.getElementById('loadingIndicator'),
@@ -257,145 +444,67 @@
 
             attachEventListeners() {
                 this.elements.translateBtn.addEventListener('click', () => this.translateText());
-                this.elements.swapBtn.addEventListener('click', () => this.swapLanguages());
+
+                const swapHandler = () => this.swapLanguages();
+                if (this.elements.swapBtn) this.elements.swapBtn.addEventListener('click', swapHandler);
+                if (this.elements.swapBtnMobile) this.elements.swapBtnMobile.addEventListener('click', swapHandler);
+
                 this.elements.voiceBtn.addEventListener('click', () => this.startVoiceRecognition());
                 this.elements.stopVoiceBtn.addEventListener('click', () => this.stopVoiceRecognition());
                 this.elements.clearBtn.addEventListener('click', () => this.clearText());
                 this.elements.copyBtn.addEventListener('click', () => this.copyResult());
                 this.elements.speakBtn.addEventListener('click', () => this.toggleSpeech());
-                
-                this.elements.inputText.addEventListener('input', () => this.updateCharCount());
-                this.elements.inputText.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                        this.translateText();
-                    }
-                });
 
-                this.elements.fromLang.addEventListener('change', () => this.updateLanguageLabels());
-                this.elements.toLang.addEventListener('change', () => this.updateLanguageLabels());
+                this.elements.inputText.addEventListener('input', () => this.updateCharCount());
+
+                // Disable Enter key translation on mobile to allow multiline typing easily
+                this.elements.inputText.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) this.translateText();
+                });
             }
 
+            // ... [SpeechRecognition methods retain same logic as previous code] ...
             setupSpeechRecognition() {
-                // Cek support untuk Speech Recognition
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                
                 if (SpeechRecognition) {
                     this.recognition = new SpeechRecognition();
-                    
-                    // Konfigurasi recognition
                     this.recognition.continuous = false;
                     this.recognition.interimResults = true;
-                    this.recognition.maxAlternatives = 1;
-                    
-                    // Event handlers
-                    this.recognition.onstart = () => {
-                        console.log('Speech recognition started');
-                        this.showVoiceIndicator();
-                    };
-
+                    this.recognition.onstart = () => this.showVoiceIndicator();
                     this.recognition.onresult = (event) => {
-                        console.log('Speech recognition result:', event);
-                        let finalTranscript = '';
-                        let interimTranscript = '';
-
+                        let final = '';
                         for (let i = event.resultIndex; i < event.results.length; i++) {
-                            const transcript = event.results[i][0].transcript;
-                            if (event.results[i].isFinal) {
-                                finalTranscript += transcript;
-                            } else {
-                                interimTranscript += transcript;
-                            }
+                            if (event.results[i].isFinal) final += event.results[i][0].transcript;
                         }
-
-                        if (finalTranscript) {
-                            this.elements.inputText.value = finalTranscript;
-                            this.updateCharCount();
-                            this.showToast('Suara berhasil dikonversi ke teks!', 'success');
-                        } else if (interimTranscript) {
-                            // Tampilkan hasil sementara
-                            this.elements.inputText.value = interimTranscript;
+                        if (final) {
+                            this.elements.inputText.value = final;
                             this.updateCharCount();
                         }
                     };
-
-                    this.recognition.onerror = (event) => {
-                        console.error('Speech recognition error:', event.error);
-                        let errorMessage = 'Terjadi kesalahan pada voice recognition';
-                        
-                        switch(event.error) {
-                            case 'no-speech':
-                                errorMessage = 'Tidak terdeteksi suara. Coba bicara lebih jelas.';
-                                break;
-                            case 'audio-capture':
-                                errorMessage = 'Tidak dapat mengakses mikrofon. Periksa permission browser.';
-                                break;
-                            case 'not-allowed':
-                                errorMessage = 'Akses mikrofon ditolak. Berikan permission di browser.';
-                                break;
-                            case 'network':
-                                errorMessage = 'Masalah koneksi internet.';
-                                break;
-                            case 'language-not-supported':
-                                errorMessage = 'Bahasa tidak didukung untuk voice recognition.';
-                                break;
-                        }
-                        
-                        this.showToast(errorMessage, 'error');
+                    this.recognition.onerror = (e) => {
+                        this.showToast('Error: ' + e.error, 'error');
                         this.hideVoiceIndicator();
                     };
-
                     this.recognition.onend = () => {
-                        console.log('Speech recognition ended');
                         this.hideVoiceIndicator();
-                        
-                        // Auto translate jika ada teks
-                        if (this.elements.inputText.value.trim()) {
-                            setTimeout(() => {
-                                this.translateText();
-                            }, 500);
-                        }
+                        if (this.elements.inputText.value.trim()) setTimeout(() => this.translateText(), 500);
                     };
-
-                    // Test permission on init
-                    this.checkMicrophonePermission();
                 } else {
-                    this.elements.voiceBtn.disabled = true;
-                    this.elements.voiceBtn.title = 'Voice recognition tidak didukung browser ini';
-                    console.warn('Speech Recognition not supported');
-                }
-            }
-
-            async checkMicrophonePermission() {
-                try {
-                    if (navigator.permissions) {
-                        const permission = await navigator.permissions.query({name: 'microphone'});
-                        console.log('Microphone permission:', permission.state);
-                        
-                        if (permission.state === 'denied') {
-                            this.elements.voiceBtn.disabled = true;
-                            this.elements.voiceBtn.title = 'Akses mikrofon ditolak. Aktifkan di pengaturan browser.';
-                        }
-                    }
-                } catch (error) {
-                    console.log('Could not check microphone permission:', error);
+                    this.elements.voiceBtn.style.display = 'none';
                 }
             }
 
             async translateText() {
                 const text = this.elements.inputText.value.trim();
-                if (!text) {
-                    this.showToast('Masukkan teks yang ingin diterjemahkan', 'error');
-                    return;
-                }
+                if (!text) return this.showToast('Masukkan teks dulu', 'error');
 
                 this.showLoading();
-                
+
                 try {
+                    // Use real endpoint
                     const response = await fetch('/api/translate', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             text: text,
                             fromLang: this.elements.fromLang.value,
@@ -405,78 +514,60 @@
 
                     const data = await response.json();
 
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Terjadi kesalahan');
-                    }
+                    if (!response.ok) throw new Error(data.error || 'Gagal');
 
                     this.elements.outputText.textContent = data.translatedText;
-                    this.elements.outputText.classList.remove('text-blue-200', 'justify-center');
-                    this.elements.outputText.classList.add('text-white');
-                    
+                    this.elements.outputText.classList.remove('italic', 'text-gray-400', 'dark:text-tokyo-muted/40');
+                    this.elements.outputText.classList.add('text-gray-800', 'dark:text-tokyo-text');
+
                     this.elements.copyBtn.disabled = false;
                     this.elements.speakBtn.disabled = false;
 
                 } catch (error) {
-                    this.showToast(error.message || 'Terjadi kesalahan saat menerjemahkan', 'error');
-                    console.error('Translation error:', error);
+                    this.showToast(error.message, 'error');
                 } finally {
                     this.hideLoading();
                 }
             }
 
             swapLanguages() {
-                const fromValue = this.elements.fromLang.value;
-                const toValue = this.elements.toLang.value;
-                
-                this.elements.fromLang.value = toValue;
-                this.elements.toLang.value = fromValue;
-                
-                const inputValue = this.elements.inputText.value;
-                const outputValue = this.elements.outputText.textContent;
-                
-                if (outputValue && outputValue !== 'Hasil terjemahan akan muncul di sini...') {
-                    this.elements.inputText.value = outputValue;
-                    this.elements.outputText.textContent = inputValue;
+                const from = this.elements.fromLang.value;
+                const to = this.elements.toLang.value;
+                this.elements.fromLang.value = to;
+                this.elements.toLang.value = from;
+
+                const input = this.elements.inputText.value;
+                const output = this.elements.outputText.textContent;
+
+                if (output && !output.includes('Terjemahan akan muncul')) {
+                    this.elements.inputText.value = output;
+                    this.elements.outputText.textContent = input;
                 }
-                
-                this.updateLanguageLabels();
-                this.updateCharCount();
+
+                // Animation
+                const btns = [this.elements.swapBtn, this.elements.swapBtnMobile];
+                btns.forEach(btn => {
+                    if (btn) {
+                        btn.classList.add('rotate-180');
+                        setTimeout(() => btn.classList.remove('rotate-180'), 300);
+                    }
+                });
             }
 
             startVoiceRecognition() {
-                if (!this.recognition) {
-                    this.showToast('Voice recognition tidak tersedia', 'error');
-                    return;
-                }
-
-                const lang = this.elements.fromLang.value;
-                this.recognition.lang = this.getRecognitionLang(lang);
-                
-                this.showVoiceIndicator();
+                if (!this.recognition) return;
+                const langMap = { 'id': 'id-ID', 'en': 'en-US', 'ja': 'ja-JP' };
+                this.recognition.lang = langMap[this.elements.fromLang.value] || 'en-US';
                 this.recognition.start();
             }
 
             stopVoiceRecognition() {
-                if (this.recognition) {
-                    this.recognition.stop();
-                }
-                this.hideVoiceIndicator();
-            }
-
-            getRecognitionLang(langCode) {
-                const langMap = {
-                    'id': 'id-ID',
-                    'en': 'en-US',
-                    'ja': 'ja-JP'
-                };
-                return langMap[langCode] || 'en-US';
+                if (this.recognition) this.recognition.stop();
             }
 
             clearText() {
                 this.elements.inputText.value = '';
-                this.elements.outputText.textContent = 'Hasil terjemahan akan muncul di sini...';
-                this.elements.outputText.classList.add('text-blue-200', 'justify-center');
-                this.elements.outputText.classList.remove('text-white');
+                this.elements.outputText.innerHTML = '<span class="text-gray-400 dark:text-tokyo-muted/40 italic">Terjemahan akan muncul di sini...</span>';
                 this.elements.copyBtn.disabled = true;
                 this.elements.speakBtn.disabled = true;
                 this.updateCharCount();
@@ -484,124 +575,37 @@
 
             async copyResult() {
                 const text = this.elements.outputText.textContent;
-                if (text && text !== 'Hasil terjemahan akan muncul di sini...') {
-                    try {
-                        await navigator.clipboard.writeText(text);
-                        this.showToast('Teks berhasil disalin!', 'success');
-                    } catch (error) {
-                        this.showToast('Gagal menyalin teks', 'error');
-                    }
-                }
+                if (!text) return;
+                try {
+                    await navigator.clipboard.writeText(text);
+                    this.showToast('Teks disalin!');
+                } catch (err) { this.showToast('Gagal menyalin', 'error'); }
             }
 
-            // Fungsi untuk toggle berbicara/menghentikan
             toggleSpeech() {
                 if (this.isSpeaking) {
-                    this.stopSpeech();
-                } else {
-                    this.speakResult();
-                }
-            }
-
-            // Fungsi untuk mengonversi teks menjadi suara
-            speakResult() {
-                const text = this.elements.outputText.textContent;
-                
-                // Cek jika teks kosong atau masih placeholder
-                if (!text || text === 'Hasil terjemahan akan muncul di sini...') {
-                    this.showToast('Tidak ada teks untuk dibacakan', 'error');
-                    return;
-                }
-
-                // Cek browser support untuk speech synthesis
-                if ('speechSynthesis' in window) {
-                    // Hentikan pembacaan yang sedang berlangsung
-                    window.speechSynthesis.cancel();
-                    
-                    // Buat utterance baru
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    
-                    // Set bahasa berdasarkan pilihan bahasa tujuan
-                    const toLang = this.elements.toLang.value;
-                    utterance.lang = this.getSpeechLang(toLang);
-                    
-                    // Atur kecepatan dan pitch
-                    utterance.rate = 0.9;
-                    utterance.pitch = 1;
-                    
-                    // Event ketika suara selesai
-                    utterance.onend = () => {
-                        this.isSpeaking = false;
-                        this.elements.speakBtn.classList.remove('animate-pulse', 'bg-purple-600');
-                        this.elements.speakBtn.classList.add('bg-purple-500');
-                        this.elements.speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-                    };
-                    
-                    // Event ketika terjadi error
-                    utterance.onerror = (event) => {
-                        console.error('Speech synthesis error:', event);
-                        this.showToast('Error dalam membacakan teks', 'error');
-                        this.isSpeaking = false;
-                        this.elements.speakBtn.classList.remove('animate-pulse', 'bg-purple-600');
-                        this.elements.speakBtn.classList.add('bg-purple-500');
-                        this.elements.speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-                    };
-                    
-                    // Mulai berbicara
-                    window.speechSynthesis.speak(utterance);
-                    this.isSpeaking = true;
-                    
-                    // Ubah tampilan tombol saat sedang berbicara
-                    this.elements.speakBtn.classList.add('animate-pulse', 'bg-purple-600');
-                    this.elements.speakBtn.classList.remove('bg-purple-500');
-                    this.elements.speakBtn.innerHTML = '<i class="fas fa-stop"></i>';
-                    
-                } else {
-                    this.showToast('Browser tidak mendukung text-to-speech', 'error');
-                }
-            }
-
-            // Fungsi untuk mendapatkan kode bahasa yang sesuai
-            getSpeechLang(langCode) {
-                const langMap = {
-                    'id': 'id-ID',
-                    'en': 'en-US',
-                    'ja': 'ja-JP'
-                };
-                return langMap[langCode] || 'en-US';
-            }
-
-            // Fungsi untuk menghentikan pembacaan
-            stopSpeech() {
-                if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                     this.isSpeaking = false;
-                    this.elements.speakBtn.classList.remove('animate-pulse', 'bg-purple-600');
-                    this.elements.speakBtn.classList.add('bg-purple-500');
-                    this.elements.speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    this.elements.speakBtn.classList.remove('text-purple-500', 'animate-pulse');
+                } else {
+                    const text = this.elements.outputText.textContent;
+                    if (!text) return;
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    const langMap = { 'id': 'id-ID', 'en': 'en-US', 'ja': 'ja-JP' };
+                    utterance.lang = langMap[this.elements.toLang.value];
+                    utterance.onend = () => {
+                        this.isSpeaking = false;
+                        this.elements.speakBtn.classList.remove('text-purple-500', 'animate-pulse');
+                    };
+                    this.elements.speakBtn.classList.add('text-purple-500', 'animate-pulse');
+                    this.isSpeaking = true;
+                    window.speechSynthesis.speak(utterance);
                 }
             }
 
             updateCharCount() {
-                const length = this.elements.inputText.value.length;
-                this.elements.charCount.textContent = `${length}/5000`;
-                
-                if (length > 4500) {
-                    this.elements.charCount.classList.add('text-red-300');
-                } else {
-                    this.elements.charCount.classList.remove('text-red-300');
-                }
-            }
-
-            updateLanguageLabels() {
-                const langNames = {
-                    'id': 'Bahasa Indonesia',
-                    'en': 'English', 
-                    'ja': '日本語'
-                };
-                
-                this.elements.fromLangLabel.textContent = langNames[this.elements.fromLang.value];
-                this.elements.toLangLabel.textContent = langNames[this.elements.toLang.value];
+                const len = this.elements.inputText.value.length;
+                this.elements.charCount.textContent = `${len}/5000`;
             }
 
             showVoiceIndicator() {
@@ -617,47 +621,28 @@
             showLoading() {
                 this.elements.loadingIndicator.classList.remove('hidden');
                 this.elements.loadingIndicator.classList.add('flex');
-                this.elements.translateBtn.disabled = true;
             }
 
             hideLoading() {
                 this.elements.loadingIndicator.classList.add('hidden');
                 this.elements.loadingIndicator.classList.remove('flex');
-                this.elements.translateBtn.disabled = false;
             }
 
-            showToast(message, type = 'success') {
-                this.elements.toastMessage.textContent = message;
-                
-                const icon = this.elements.toast.querySelector('i');
-                icon.className = type === 'success' ? 'fas fa-check-circle text-green-400 mr-3' : 'fas fa-exclamation-circle text-red-400 mr-3';
-                
-                this.elements.toast.classList.remove('translate-x-full');
-                
-                setTimeout(() => {
-                    this.elements.toast.classList.add('translate-x-full');
-                }, 3000);
+            showToast(msg, type = 'success') {
+                const toast = this.elements.toast;
+                const txt = this.elements.toastMessage;
+                txt.textContent = msg;
+
+                if (type === 'error') toast.querySelector('i').className = 'fas fa-exclamation-circle text-red-400';
+                else toast.querySelector('i').className = 'fas fa-check-circle text-green-400';
+
+                toast.classList.remove('translate-y-24', 'opacity-0');
+                setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
             }
         }
 
-        // Initialize app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            const app = new TranslatorApp();
-            
-            // Tambahkan style untuk animasi pulsate
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes pulse {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(1.1); }
-                    100% { transform: scale(1); }
-                }
-                .animate-pulse {
-                    animation: pulse 1.5s infinite;
-                }
-            `;
-            document.head.appendChild(style);
-        });
+        document.addEventListener('DOMContentLoaded', () => new TranslatorApp());
     </script>
 </body>
+
 </html>

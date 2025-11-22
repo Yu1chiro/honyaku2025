@@ -1,0 +1,21 @@
+{
+  "name": "Yuii Translator 2025",
+  "short_name": "YuiiTrans",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1b26",
+  "theme_color": "#1a1b26",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://ucarecdn.com/ebe81342-64fc-4e47-bcc5-632c0552c657/11zon_cropped.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://ucarecdn.com/ebe81342-64fc-4e47-bcc5-632c0552c657/11zon_cropped.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
