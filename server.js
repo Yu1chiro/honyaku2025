@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const QRCode = require('qrcode');
 require('dotenv').config();
 
 const app = express();
@@ -8,6 +9,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
+// --- MAPPING 1: UI Frontend ---
 const supportedLanguages = {
   'id': 'Bahasa Indonesia',
   'en': 'English',
@@ -20,9 +22,35 @@ const supportedLanguages = {
   'fr': 'Français (French)'
 };
 
+// --- MAPPING 2: AI Prompt (Untuk Akurasi Target) ---
+const aiLanguageMap = {
+  'id': 'Indonesian',
+  'en': 'English',
+  'ja': 'Japanese',
+  'zh': 'Chinese (Mandarin)',
+  'ko': 'Korean',
+  'my': 'Burmese',
+  'th': 'Thai',
+  'tl': 'Filipino',
+  'fr': 'French'
+};
+
+// --- ROUTES ---
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+app.get('/404', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', '404.html'));
+});
+app.get('/translate', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'view.html'));
+});
+
+app.get('/realtime-translation', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'realtime.html'));
+});
+
 app.get('/sw', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'sw.js'));
 });
@@ -34,7 +62,105 @@ app.get('/api/languages', (req, res) => {
   res.json(supportedLanguages);
 });
 
+// API: Generate QR Code
+app.post('/api/generate-qr', async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL is required' });
+    const qrImage = await QRCode.toDataURL(url);
+    res.json({ qrImage });
+  } catch (error) {
+    console.error('QR Gen Error:', error);
+    res.status(500).json({ error: 'Failed to generate QR' });
+  }
+});
+
+// --- API TRANSLATE (PERBAIKAN LOGIC JSON) ---
 app.post('/api/translate', async (req, res) => {
+  try {
+    const { text, fromLang, toLang } = req.body;
+    if (!process.env.GEMINI_APIKEY) return res.status(500).json({ error: 'API Key Missing' });
+    
+    // 1. Pastikan Nama Bahasa Jelas
+    const sourceLangName = aiLanguageMap[fromLang] || 'Indonesian';
+    const targetLangName = aiLanguageMap[toLang] || 'English';
+
+    // 2. PROMPT YANG LEBIH AMAN (STRICT JSON)
+    // Kita hapus perintah "Analyze First" yang eksplisit agar AI tidak chi-chat.
+    // Kita tanamkan logic konteks langsung di instruksi "Style".
+    
+    const prompt = `
+    Translate the following text strictly from ${sourceLangName} to ${targetLangName}.
+
+    INPUT TEXT: "${text}"
+
+    GUIDELINES:
+    1. **Style**: Casual conversation (friend-to-friend). Use natural spoken language.
+    2. **Context**: 
+       - If Target is Indonesian, use "aku/kamu" (never "saya/anda" unless formal context implies it).
+       - Keep it short and authentic.
+    3. **Forbidden**: Do NOT output Javanese or regional dialects. Standard ${targetLangName} only.
+    4. **Pronunciation**: 
+       - REQUIRED for: Japanese, Korean, Thai, Chinese, Burmese (Romanization).
+       - NULL for: Indonesian, English, French, Tagalog.
+    
+    OUTPUT FORMAT:
+    Respond ONLY with a raw JSON object. Do not add markdown block markers (like \`\`\`json).
+    
+    { 
+      "translatedText": "...", 
+      "pronunciation": "..." 
+    }
+    `;
+
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.GEMINI_APIKEY
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { 
+            responseMimeType: "application/json",
+            temperature: 0.4 // Turunkan agar lebih stabil/tidak halusinasi
+        }
+      })
+    });
+
+    const data = await response.json();
+    if (!data.candidates) throw new Error("Gemini API Error");
+
+    // Bersihkan output dari markdown jika AI bandel
+    let resultText = data.candidates[0].content.parts[0].text
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+        
+    let jsonResult = {};
+    
+    try { 
+        jsonResult = JSON.parse(resultText); 
+    } catch (e) { 
+        console.error("JSON Parse Fail, Raw:", resultText);
+        // Fallback manual jika JSON rusak sedikit
+        jsonResult = { translatedText: text, pronunciation: null }; 
+    }
+
+    res.json({
+      translatedText: jsonResult.translatedText || text,
+      transliteration: jsonResult.pronunciation || "", 
+      originalText: text,
+      fromLang,
+      toLang
+    });
+
+  } catch (error) {
+    console.error('Translation Error:', error);
+    res.json({ error: true, translatedText: req.body.text, transliteration: "" });
+  }
+});
+app.post('/api/jisho', async (req, res) => {
   try {
     const { text, fromLang, toLang } = req.body;
 
@@ -131,6 +257,7 @@ app.post('/api/translate', async (req, res) => {
   }
 });
 
+// --- API DETECT (SAMA SEPERTI SEBELUMNYA) ---
 app.post('/api/detect-language', async (req, res) => {
   try {
     const { text } = req.body;
@@ -222,7 +349,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint tidak ditemukan' });
+    res.sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 app.listen(PORT, () => {
