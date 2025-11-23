@@ -1,4 +1,4 @@
-const CACHE_NAME = 'honyaku-version-2';
+const CACHE_NAME = 'honyaku-version-new';
 
 // Aset Lokal
 const LOCAL_ASSETS = [
