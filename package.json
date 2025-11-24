@@ -1,7 +1,12 @@
 {
   "dependencies": {
     "dotenv": "^17.2.1",
+    "esbuild": "^0.27.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "glob": "^13.0.0",
+    "html-minifier-terser": "^7.2.0",
+    "node-cache": "^5.1.2",
     "qrcode": "^1.5.4"
   },
   "name": "gengo-tsuyaku",
@@ -9,7 +14,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node build.js"
   },
   "keywords": [],
   "author": "",
