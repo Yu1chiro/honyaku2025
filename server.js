@@ -21,6 +21,7 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/api/', apiLimiter);
+
 // --- MAPPING 1: UI Frontend ---
 const supportedLanguages = {
   'id': 'Bahasa Indonesia',
@@ -51,6 +52,9 @@ const aiLanguageMap = {
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.get('/docs', (req, res) => { // ROUTE BARU: DOKUMENTASI
+  res.sendFile(path.join(__dirname, 'public', 'doc.html'));
 });
 app.get('/404', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', '404.html'));
@@ -85,14 +89,15 @@ app.post('/api/generate-qr', async (req, res) => {
   }
 });
 
-// --- API TRANSLATE (PERBAIKAN LOGIC JSON) ---
+// --- API TRANSLATE (LOGIC ASLI DIPERTAHANKAN + FITUR USER KEY) ---
 app.post('/api/translate', async (req, res) => {
     try {
-        const { text, fromLang, toLang } = req.body;
+        // TERIMA userApiKey DARI CLIENT
+       const { text, fromLang, toLang, userApiKey, context } = req.body;
 
         // [STRATEGI 3] Validasi Input Hemat Kuota
         if (!text || text.trim() === "") return res.json({ translatedText: "", transliteration: "" });
-        // Jika bahasa sama, balikan langsung (Hemat API)
+        
         if (fromLang === toLang) {
             return res.json({
                 translatedText: text,
@@ -103,50 +108,60 @@ app.post('/api/translate', async (req, res) => {
             });
         }
 
-        if (!process.env.GEMINI_APIKEY) return res.status(500).json({ error: 'API Key Missing' });
+        // LOGIC PILIH KEY: Kalau user kirim key valid, pakai itu. Kalau tidak, pakai server key.
+        const apiKeyToUse = (userApiKey && userApiKey.trim().length > 10) ? userApiKey.trim() : process.env.GEMINI_APIKEY;
 
-        // [STRATEGI 1] Cek Cache Dulu
+        if (!apiKeyToUse) return res.status(500).json({ error: 'API Key Missing (Server & Client)' });
+
+        // [STRATEGI 1] Cek Cache Dulu (Hanya jika pakai server key, agar user key tidak tercampur)
         const cacheKey = `trans_${fromLang}_${toLang}_${text.trim().toLowerCase()}`;
-        const cachedData = myCache.get(cacheKey);
-        if (cachedData) {
-            return res.json(cachedData); // Return dari RAM
+        // Jika pakai custom key, skip cache global demi privasi/kuota user
+        if (!userApiKey) {
+            const cachedData = myCache.get(cacheKey);
+            if (cachedData) return res.json(cachedData); 
         }
 
-        // --- LOGIC ASLI ANDA MULAI DARI SINI (TIDAK DIUBAH) ---
+        // --- LOGIC ASLI ANDA MULAI DARI SINI (TIDAK DIUBAH SAMA SEKALI PROMPTNYA) ---
         
-        // 1. Pastikan Nama Bahasa Jelas
         const sourceLangName = aiLanguageMap[fromLang] || 'Indonesian';
         const targetLangName = aiLanguageMap[toLang] || 'English';
 
         const prompt = `
-    Translate the following text strictly from ${sourceLangName} to ${targetLangName}.
-
-    INPUT TEXT: "${text}"
+    You are a real-time interpreter.
+    
+    [CONTEXT / HISTORY]
+    The following is the recent conversation history (for context only):
+    """
+    ${context || "No previous context."}
+    """
+    
+    [TASK]
+    Translate the NEW INPUT below strictly from ${sourceLangName} to ${targetLangName}.
+    Adjust the tone and diction based on the [CONTEXT] above.
+    
+    NEW INPUT: "${text}"
 
     GUIDELINES:
     1. **Style**: Casual conversation (friend-to-friend). Use natural spoken language.
     2. **Context**: 
-       - If Target is Indonesian, use "aku/kamu" (never "saya/anda" unless formal context implies it).
-       - Keep it short and authentic.
+       - If Target is Indonesian, use "aku/kamu".
+       - Look at [CONTEXT] to determine pronouns and ambiguity.
     3. **Forbidden**: Do NOT output Javanese or regional dialects. Standard ${targetLangName} only.
-    4. **Pronunciation**: 
-       - REQUIRED for: Japanese, Korean, Thai, Chinese, Burmese (Romanization).
-       - NULL for: Indonesian, English, French, Tagalog.
+
     
     OUTPUT FORMAT:
-    Respond ONLY with a raw JSON object. Do not add markdown block markers (like \`\`\`json).
-    
+    Respond ONLY with a raw JSON object.
     { 
       "translatedText": "...", 
-      "pronunciation": "..." 
     }
     `;
 
+        // Menggunakan apiKeyToUse di header
         const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-goog-api-key': process.env.GEMINI_APIKEY
+                'x-goog-api-key': apiKeyToUse 
             },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
@@ -158,7 +173,11 @@ app.post('/api/translate', async (req, res) => {
         });
 
         const data = await response.json();
-        if (!data.candidates) throw new Error("Gemini API Error");
+        // Cek error dari Google (misal Key User Salah)
+        if (data.error) {
+             throw new Error(data.error.message || "Gemini API Error");
+        }
+        if (!data.candidates) throw new Error("Gemini API Error - No Candidates");
 
         let resultText = data.candidates[0].content.parts[0].text
             .replace(/```json/g, '')
@@ -174,7 +193,6 @@ app.post('/api/translate', async (req, res) => {
             jsonResult = { translatedText: text, pronunciation: null };
         }
 
-        // Construct Final Object
         const finalResponse = {
             translatedText: jsonResult.translatedText || text,
             transliteration: jsonResult.pronunciation || "",
@@ -185,21 +203,24 @@ app.post('/api/translate', async (req, res) => {
 
         // --- LOGIC ASLI BERAKHIR DI SINI ---
 
-        // [STRATEGI 1] Simpan ke Cache sebelum return
-        myCache.set(cacheKey, finalResponse);
+        // Simpan cache hanya jika pakai server key
+        if (!userApiKey) {
+            myCache.set(cacheKey, finalResponse);
+        }
 
         res.json(finalResponse);
 
     } catch (error) {
         console.error('Translation Error:', error);
-        res.json({ error: true, translatedText: req.body.text, transliteration: "" });
+        // Kirim detail error ke client (berguna jika API Key User salah)
+        res.status(500).json({ error: true, translatedText: req.body.text, transliteration: "", message: error.message });
     }
 });
 
-// --- API JISHO (Logic Inti Tetap, Ditambah Cache) ---
+// --- API JISHO (LOGIC ASLI DIPERTAHANKAN + FITUR USER KEY) ---
 app.post('/api/jisho', async (req, res) => {
     try {
-        const { text, fromLang, toLang } = req.body;
+        const { text, fromLang, toLang, userApiKey } = req.body;
 
         // [STRATEGI 3] Validasi
         if (!text || !fromLang || !toLang) return res.status(400).json({ error: 'Missing parameters' });
@@ -213,12 +234,18 @@ app.post('/api/jisho', async (req, res) => {
             });
         }
 
-        // [STRATEGI 1] Cek Cache
-        const cacheKey = `jisho_${fromLang}_${toLang}_${text.trim().toLowerCase()}`;
-        const cachedData = myCache.get(cacheKey);
-        if (cachedData) return res.json(cachedData);
+        // LOGIC PILIH KEY
+        const apiKeyToUse = (userApiKey && userApiKey.trim().length > 10) ? userApiKey.trim() : process.env.GEMINI_APIKEY;
+        if (!apiKeyToUse) throw new Error('API Key Missing');
 
-        // --- LOGIC ASLI ANDA MULAI DARI SINI (TIDAK DIUBAH) ---
+        // [STRATEGI 1] Cek Cache (Skip jika custom key)
+        const cacheKey = `jisho_${fromLang}_${toLang}_${text.trim().toLowerCase()}`;
+        if (!userApiKey) {
+            const cachedData = myCache.get(cacheKey);
+            if (cachedData) return res.json(cachedData);
+        }
+
+        // --- LOGIC ASLI ANDA MULAI DARI SINI ---
 
         const fromName = supportedLanguages[fromLang];
         const toName = supportedLanguages[toLang];
@@ -240,13 +267,12 @@ app.post('/api/jisho', async (req, res) => {
             prompt = `Translate this text from ${fromName} to ${toName}. Output ONLY the translation. Text: "${text}"`;
         }
 
-        if (!process.env.GEMINI_APIKEY) throw new Error('GEMINI_APIKEY missing');
-
+        // Menggunakan apiKeyToUse
         const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-goog-api-key': process.env.GEMINI_APIKEY
+                'x-goog-api-key': apiKeyToUse
             },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
@@ -289,8 +315,9 @@ app.post('/api/jisho', async (req, res) => {
 
         // --- LOGIC ASLI BERAKHIR DI SINI ---
 
-        // [STRATEGI 1] Simpan ke Cache
-        myCache.set(cacheKey, finalResponse);
+        if (!userApiKey) {
+            myCache.set(cacheKey, finalResponse);
+        }
 
         res.json(finalResponse);
 
@@ -300,24 +327,25 @@ app.post('/api/jisho', async (req, res) => {
     }
 });
 
-// --- API DETECT (Logic Inti Tetap, Ditambah Cache) ---
+// --- API DETECT (LOGIC ASLI DIPERTAHANKAN + FITUR USER KEY) ---
 app.post('/api/detect-language', async (req, res) => {
     try {
-        const { text } = req.body;
+        const { text, userApiKey } = req.body; // Terima key dari body
 
         // [STRATEGI 3] Validasi
         if (!text) return res.status(400).json({ error: 'Text harus diisi' });
 
-        // [STRATEGI 1] Cek Cache (Cukup 50 karakter awal agar hemat key)
+        const apiKeyToUse = (userApiKey && userApiKey.trim().length > 10) ? userApiKey.trim() : process.env.GEMINI_APIKEY;
+        if (!apiKeyToUse) return res.status(500).json({ error: 'GEMINI_APIKEY missing' });
+
+        // [STRATEGI 1] Cek Cache
         const cacheKey = `detect_${text.trim().substr(0, 50).toLowerCase()}`;
-        const cachedData = myCache.get(cacheKey);
-        if (cachedData) return res.json(cachedData);
-
-        // --- LOGIC ASLI ANDA MULAI DARI SINI (TIDAK DIUBAH) ---
-
-        if (!process.env.GEMINI_APIKEY) {
-            return res.status(500).json({ error: 'GEMINI_APIKEY tidak dikonfigurasi' });
+        if (!userApiKey) {
+            const cachedData = myCache.get(cacheKey);
+            if (cachedData) return res.json(cachedData);
         }
+
+        // --- LOGIC ASLI ANDA MULAI DARI SINI ---
 
         const prompt = `Deteksi bahasa dari teks berikut dan berikan HANYA kode bahasa (id, en, ja, zh, ko, my, th, tl, fr):
 
@@ -327,7 +355,7 @@ app.post('/api/detect-language', async (req, res) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-goog-api-key': process.env.GEMINI_APIKEY
+                'x-goog-api-key': apiKeyToUse
             },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
@@ -377,8 +405,9 @@ app.post('/api/detect-language', async (req, res) => {
 
         // --- LOGIC ASLI BERAKHIR DI SINI ---
 
-        // [STRATEGI 1] Simpan ke Cache
-        myCache.set(cacheKey, finalResponse);
+        if (!userApiKey) {
+            myCache.set(cacheKey, finalResponse);
+        }
 
         res.json(finalResponse);
 

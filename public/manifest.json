@@ -3,8 +3,8 @@
   "short_name": "Honyaku App",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1b26",
-  "theme_color": "#1a1b26",
+  "background_color": "191919",
+  "theme_color": "191919",
   "orientation": "portrait-primary",
   "icons": [
     {
