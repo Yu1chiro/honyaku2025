@@ -157,7 +157,7 @@ app.post('/api/translate', async (req, res) => {
     `;
 
         // Menggunakan apiKeyToUse di header
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -268,7 +268,7 @@ app.post('/api/jisho', async (req, res) => {
         }
 
         // Menggunakan apiKeyToUse
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -351,7 +351,7 @@ app.post('/api/detect-language', async (req, res) => {
 
 "${text}"`;
 
-        const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+        const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
