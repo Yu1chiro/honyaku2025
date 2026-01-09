@@ -1,21 +1,25 @@
 {
   "name": "Honyaku App",
-  "short_name": "Honyaku App",
+  "short_name": "Honyaku",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "191919",
-  "theme_color": "191919",
+  "background_color": "#191919",
+  "theme_color": "#191919",
   "orientation": "portrait-primary",
   "icons": [
     {
       "src": "https://ucarecdn.com/729a636c-478f-4a5f-b441-561c31a969c2/splashsc.png",
       "type": "image/png",
       "sizes": "192x192"
-    },
-    {
-      "src": "https://ucarecdn.com/729a636c-478f-4a5f-b441-561c31a969c2/splashsc.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/translate",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
